@@ -1,0 +1,37 @@
+name: pocketwise
+description: PocketWise personal finance app
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.0
+  flutter: ^3.44.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # Local Persistence
+  sqflite: ^2.3.0
+  path: ^1.8.3
+
+  # Charts
+  fl_chart: ^0.66.0
+
+  # Navigation & Fonts
+  go_router: ^13.1.0
+  google_fonts: ^6.1.0
+  lucide_icons: ^0.257.0
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
