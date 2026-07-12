@@ -32,7 +32,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           switchOutCurve: Curves.easeInCubic,
           child: KeyedSubtree(
             key: ValueKey(_currentIndex),
-            child: _buildCurrentScreen(transactions),
+            child: _buildCurrentScreen(
+              transactions,
+              dashboardState.budgetLimits,
+            ),
           ),
         ),
       ),
@@ -48,14 +51,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildCurrentScreen(List<Transaction> transactions) {
+  Widget _buildCurrentScreen(
+    List<Transaction> transactions,
+    Map<String, double> budgetLimits,
+  ) {
     switch (_currentIndex) {
       case 0:
-        return HomeTab(transactions: transactions);
+        return HomeTab(
+          transactions: transactions,
+          budgetLimits: budgetLimits,
+        );
       case 1:
         return ActivityTab(transactions: transactions);
       case 2:
-        return BudgetsTab(transactions: transactions);
+        return BudgetsTab(
+          transactions: transactions,
+          budgetLimits: budgetLimits,
+          onSetBudget: (category, limit) {
+            ref.read(dashboardProvider.notifier).setBudget(category, limit);
+          },
+          onRemoveBudget: (category) {
+            ref.read(dashboardProvider.notifier).removeBudget(category);
+          },
+        );
       case 3:
         return MoreTab(
           onOpenReports: () {
@@ -65,7 +83,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           },
         );
       default:
-        return HomeTab(transactions: transactions);
+        return HomeTab(
+          transactions: transactions,
+          budgetLimits: budgetLimits,
+        );
     }
   }
 

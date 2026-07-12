@@ -9,36 +9,31 @@ List<ChartLegendItem> buildChartItems(Map<String, double> values) {
     AppColors.warning,
     AppColors.primary,
     AppColors.success,
+    Color(0xFF38BDF8),
   ];
   final entries = values.entries.toList()
     ..sort((a, b) => b.value.compareTo(a.value));
 
-  if (entries.isEmpty) {
-    return const [
-      ChartLegendItem(
-        label: 'Food',
-        amount: 0,
-        color: AppColors.danger,
-      ),
-      ChartLegendItem(
-        label: 'Transport',
-        amount: 0,
-        color: AppColors.warning,
-      ),
-      ChartLegendItem(
-        label: 'Bills',
-        amount: 0,
-        color: AppColors.primary,
-      ),
-    ];
-  }
+  if (entries.isEmpty) return const [];
+
+  const visibleCategoryCount = 4;
+  final visibleEntries = entries.take(visibleCategoryCount).toList();
+  final remainingTotal = entries
+      .skip(visibleCategoryCount)
+      .fold<double>(0, (sum, entry) => sum + entry.value);
 
   return [
-    for (var i = 0; i < entries.length; i++)
+    for (var i = 0; i < visibleEntries.length; i++)
       ChartLegendItem(
-        label: entries[i].key,
-        amount: entries[i].value,
+        label: visibleEntries[i].key,
+        amount: visibleEntries[i].value,
         color: palette[i % palette.length],
+      ),
+    if (remainingTotal > 0)
+      ChartLegendItem(
+        label: 'Other',
+        amount: remainingTotal,
+        color: palette[4],
       ),
   ];
 }

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -10,10 +11,56 @@ import '../models/transaction.dart';
 import '../utils/dashboard_ui_helpers.dart';
 import 'dashboard_common_widgets.dart';
 
+List<BudgetViewData> _buildMonthlyBudgets(
+  List<Transaction> transactions,
+  DateTime month,
+  Map<String, double> budgetLimits,
+) {
+  final spending = <String, double>{};
+  for (final transaction in transactions.where(
+    (transaction) =>
+        transaction.isExpense &&
+        transaction.date.year == month.year &&
+        transaction.date.month == month.month,
+  )) {
+    spending.update(
+      transaction.categoryLabel,
+      (amount) => amount + transaction.amount,
+      ifAbsent: () => transaction.amount,
+    );
+  }
+
+  final categories = <String>{
+    ...budgetLimits.keys,
+    ...spending.keys,
+  };
+  return categories.map((category) {
+    final spent = spending[category] ?? 0;
+    final limit = budgetLimits[category];
+    final ratio = limit == null || limit == 0 ? 0.0 : spent / limit;
+    final color = ratio >= 1
+        ? AppColors.danger
+        : ratio >= 0.8
+            ? AppColors.warning
+            : AppColors.primary;
+    return BudgetViewData(
+      category: category,
+      spent: spent,
+      limit: limit,
+      color: color,
+    );
+  }).toList();
+}
+
 class HomeTab extends StatelessWidget {
-  const HomeTab({super.key, required this.transactions});
+  const HomeTab({
+    super.key,
+    required this.transactions,
+    required this.budgetLimits,
+  });
 
   final List<Transaction> transactions;
+  final Map<String, double> budgetLimits;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +87,19 @@ class HomeTab extends StatelessWidget {
     }
 
     final chartItems = buildChartItems(spendingByCategory);
+    final budgetAlerts = _buildMonthlyBudgets(transactions, now, budgetLimits)
+        .where(
+          (budget) =>
+              budget.limit != null &&
+              budget.limit! > 0 &&
+              budget.spent! / budget.limit! >= 0.8,
+        )
+        .toList()
+      ..sort(
+        (a, b) =>
+            (b.spent! / b.limit!).compareTo(a.spent! / a.limit!),
+      );
+    final warningBudget = budgetAlerts.isEmpty ? null : budgetAlerts.first;
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -78,11 +138,10 @@ class HomeTab extends StatelessWidget {
                   )
                 else
                   TransactionCardList(transactions: recent),
-                const SizedBox(height: 14),
-                const BudgetWarningCard(
-                  title: 'Food budget at 87%',
-                  subtitle: 'RM244 of RM280 spent this month.',
-                ),
+                if (warningBudget != null) ...[
+                  const SizedBox(height: 14),
+                  BudgetWarningCard.fromBudget(warningBudget),
+                ],
               ],
             ),
           ),
@@ -165,33 +224,23 @@ class ActivityTab extends StatelessWidget {
 }
 
 class BudgetsTab extends StatelessWidget {
-  const BudgetsTab({super.key, required this.transactions});
+  const BudgetsTab({
+    super.key,
+    required this.transactions,
+    required this.budgetLimits,
+    required this.onSetBudget,
+    required this.onRemoveBudget,
+  });
 
   final List<Transaction> transactions;
+  final Map<String, double> budgetLimits;
+  final void Function(String category, double limit) onSetBudget;
+  final ValueChanged<String> onRemoveBudget;
 
   @override
   Widget build(BuildContext context) {
-    final budgets = [
-      const BudgetViewData(
-        category: 'Food',
-        spent: 244,
-        limit: 280,
-        color: AppColors.warning,
-      ),
-      const BudgetViewData(
-        category: 'Transport',
-        spent: 149,
-        limit: 150,
-        color: AppColors.danger,
-      ),
-      const BudgetViewData(
-        category: 'Bills',
-        spent: 152,
-        limit: 300,
-        color: AppColors.primary,
-      ),
-      const BudgetViewData(category: 'Shopping'),
-    ];
+    final now = DateTime.now();
+    final budgets = _buildMonthlyBudgets(transactions, now, budgetLimits);
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -210,7 +259,7 @@ class BudgetsTab extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              const MonthPill(label: 'July'),
+              MonthPill(label: _monthName(now.month)),
             ],
           ),
           const SizedBox(height: 8),
@@ -223,15 +272,62 @@ class BudgetsTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 22),
-          ...budgets.map(
-            (budget) => Padding(
-              padding: const EdgeInsets.only(bottom: 18),
-              child: BudgetCard(data: budget),
+          if (budgets.isEmpty)
+            const EmptyStateCard(
+              title: 'No budget categories yet',
+              subtitle: 'Add an expense first, then set a monthly limit for its category.',
+            )
+          else
+            ...budgets.map(
+              (budget) => Padding(
+                padding: const EdgeInsets.only(bottom: 18),
+                child: BudgetCard(
+                  data: budget,
+                  onSetBudget: () => _openBudgetDialog(context, budget),
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
+  }
+
+  String _monthName(int month) {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return months[month - 1];
+  }
+
+  Future<void> _openBudgetDialog(
+    BuildContext context,
+    BudgetViewData budget,
+  ) async {
+    final result = await showDialog<double>(
+      context: context,
+      builder: (context) => _SetBudgetDialog(
+        category: budget.category,
+        currentLimit: budget.limit,
+        onRemove: budget.limit == null
+            ? null
+            : () {
+                onRemoveBudget(budget.category);
+                Navigator.pop(context);
+              },
+      ),
+    );
+    if (result != null) onSetBudget(budget.category, result);
   }
 }
 
@@ -441,7 +537,7 @@ class MetricTile extends StatelessWidget {
   }
 }
 
-class OverviewCard extends StatelessWidget {
+class OverviewCard extends StatefulWidget {
   const OverviewCard({
     super.key,
     required this.items,
@@ -450,29 +546,113 @@ class OverviewCard extends StatelessWidget {
   final List<ChartLegendItem> items;
 
   @override
+  State<OverviewCard> createState() => _OverviewCardState();
+}
+
+class _OverviewCardState extends State<OverviewCard> {
+  int _touchedIndex = -1;
+
+  @override
+  void didUpdateWidget(covariant OverviewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_touchedIndex >= widget.items.length) _touchedIndex = -1;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final items = widget.items;
     final total = items.fold<double>(0, (sum, item) => sum + item.amount);
+    final selectedItem = _touchedIndex >= 0 ? items[_touchedIndex] : null;
+    final centerLabel = selectedItem?.label.toUpperCase() ?? 'TOTAL EXP';
+    final centerAmount = selectedItem?.amount ?? total;
+
+    if (items.isEmpty) {
+      return GlassPanel(
+        child: SizedBox(
+          height: 116,
+          child: Row(
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.donut_large_rounded,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'No spending this month',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Add an expense to see your category breakdown.',
+                      style: GoogleFonts.inter(
+                        color: AppColors.mutedText,
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return GlassPanel(
       child: Row(
         children: [
           SizedBox(
-            width: 126,
-            height: 126,
+            width: 142,
+            height: 142,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 PieChart(
                   PieChartData(
                     sectionsSpace: 2,
-                    centerSpaceRadius: 32,
+                    centerSpaceRadius: 39,
                     startDegreeOffset: -90,
+                    pieTouchData: PieTouchData(
+                      touchCallback: (event, response) {
+                        final touchedIndex = response
+                                ?.touchedSection
+                                ?.touchedSectionIndex ??
+                            -1;
+                        final nextIndex = event.isInterestedForInteractions
+                            ? touchedIndex
+                            : -1;
+                        if (nextIndex != _touchedIndex) {
+                          setState(() => _touchedIndex = nextIndex);
+                        }
+                      },
+                    ),
                     sections: items
+                        .asMap()
+                        .entries
                         .map(
-                          (item) => PieChartSectionData(
-                            value: item.amount,
-                            color: item.color,
-                            radius: 18,
+                          (entry) => PieChartSectionData(
+                            value: entry.value.amount,
+                            color: entry.value.color,
+                            radius: entry.key == _touchedIndex ? 24 : 20,
                             showTitle: false,
                           ),
                         )
@@ -482,20 +662,37 @@ class OverviewCard extends StatelessWidget {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'RM${total.toStringAsFixed(0)}',
-                      style: GoogleFonts.spaceGrotesk(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+                    SizedBox(
+                      width: 72,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          centerLabel,
+                          maxLines: 1,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF8FB3E8),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.7,
+                          ),
+                        ),
                       ),
                     ),
-                    Text(
-                      'this month',
-                      style: GoogleFonts.inter(
-                        color: AppColors.mutedText,
-                        fontSize: 10,
+                    const SizedBox(height: 3),
+                    SizedBox(
+                      width: 74,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'RM ${centerAmount.toStringAsFixed(0)}',
+                          maxLines: 1,
+                          style: GoogleFonts.spaceGrotesk(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -508,31 +705,55 @@ class OverviewCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: items
+                  .asMap()
+                  .entries
                   .map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: item.color,
-                              borderRadius: BorderRadius.circular(99),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              '${item.label} · RM${item.amount.toStringAsFixed(0)}',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
+                    (entry) => MouseRegion(
+                      onEnter: (_) {
+                        setState(() => _touchedIndex = entry.key);
+                      },
+                      onExit: (_) {
+                        setState(() => _touchedIndex = -1);
+                      },
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          setState(() {
+                            _touchedIndex = _touchedIndex == entry.key
+                                ? -1
+                                : entry.key;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: entry.value.color,
+                                  borderRadius: BorderRadius.circular(99),
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '${entry.value.label} · RM${entry.value.amount.toStringAsFixed(0)}',
+                                  style: GoogleFonts.inter(
+                                    color: _touchedIndex == entry.key
+                                        ? Colors.white
+                                        : const Color(0xFFD7DEEA),
+                                    fontSize: 13,
+                                    fontWeight: _touchedIndex == entry.key
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   )
@@ -680,13 +901,170 @@ class TransactionRow extends StatelessWidget {
   }
 }
 
+class _SetBudgetDialog extends StatefulWidget {
+  const _SetBudgetDialog({
+    required this.category,
+    this.currentLimit,
+    this.onRemove,
+  });
+
+  final String category;
+  final double? currentLimit;
+  final VoidCallback? onRemove;
+
+  @override
+  State<_SetBudgetDialog> createState() => _SetBudgetDialogState();
+}
+
+class _SetBudgetDialogState extends State<_SetBudgetDialog> {
+  late final TextEditingController _controller;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.currentLimit?.toStringAsFixed(0) ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Color(0xFF33435B)),
+      ),
+      title: Text(
+        widget.currentLimit == null ? 'Set budget' : 'Edit budget',
+        style: GoogleFonts.inter(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Monthly limit for ${widget.category}',
+            style: GoogleFonts.inter(
+              color: AppColors.mutedText,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d{0,7}(\.\d{0,2})?')),
+            ],
+            style: GoogleFonts.spaceGrotesk(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              labelText: 'Budget amount',
+              prefixText: 'RM ',
+              errorText: _errorText,
+              filled: true,
+              fillColor: AppColors.background,
+              labelStyle: GoogleFonts.inter(color: AppColors.mutedText),
+              prefixStyle: GoogleFonts.spaceGrotesk(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF3A4960)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1.5,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.danger),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.danger),
+              ),
+            ),
+            onChanged: (_) {
+              if (_errorText != null) setState(() => _errorText = null);
+            },
+            onSubmitted: (_) => _submit(),
+          ),
+        ],
+      ),
+      actionsAlignment: widget.onRemove == null
+          ? MainAxisAlignment.end
+          : MainAxisAlignment.spaceBetween,
+      actions: [
+        if (widget.onRemove != null)
+          TextButton(
+            onPressed: widget.onRemove,
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: const Text('Remove'),
+          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            const SizedBox(width: 4),
+            FilledButton(
+              onPressed: _submit,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _submit() {
+    final amount = double.tryParse(_controller.text.trim());
+    if (amount == null || amount <= 0) {
+      setState(() => _errorText = 'Enter an amount greater than RM 0.');
+      return;
+    }
+    Navigator.pop(context, amount);
+  }
+}
+
 class BudgetCard extends StatelessWidget {
   const BudgetCard({
     super.key,
     required this.data,
+    required this.onSetBudget,
   });
 
   final BudgetViewData data;
+  final VoidCallback onSetBudget;
 
   @override
   Widget build(BuildContext context) {
@@ -696,6 +1074,12 @@ class BudgetCard extends StatelessWidget {
     final percentage = data.limit == null || data.limit == 0
         ? null
         : ((data.spent! / data.limit!) * 100).round();
+    final overAmount = data.limit != null && data.spent! > data.limit!
+        ? data.spent! - data.limit!
+        : null;
+    final badgeLabel = overAmount == null
+        ? '$percentage%'
+        : 'RM${overAmount == overAmount.roundToDouble() ? overAmount.toStringAsFixed(0) : overAmount.toStringAsFixed(2)} over';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -711,15 +1095,21 @@ class BudgetCard extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            if (data.limit == null)
-              Text(
-                '+ Set budget',
+            TextButton(
+              onPressed: onSetBudget,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                minimumSize: const Size(48, 44),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              child: Text(
+                data.limit == null ? '+ Set budget' : 'Edit',
                 style: GoogleFonts.inter(
-                  color: AppColors.primary,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                 ),
               ),
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -765,7 +1155,7 @@ class BudgetCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
-                            '$percentage%',
+                            badgeLabel,
                             style: GoogleFonts.inter(
                               color: data.color,
                               fontSize: 12,
@@ -798,10 +1188,27 @@ class BudgetWarningCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
+    this.color = AppColors.warning,
   });
+
+  factory BudgetWarningCard.fromBudget(BudgetViewData budget) {
+    final spent = budget.spent!;
+    final limit = budget.limit!;
+    final percentage = ((spent / limit) * 100).round();
+    final isExceeded = spent >= limit;
+    return BudgetWarningCard(
+      title: isExceeded
+          ? '${budget.category} budget exceeded'
+          : '${budget.category} budget at $percentage%',
+      subtitle:
+          'RM${spent.toStringAsFixed(0)} of RM${limit.toStringAsFixed(0)} spent this month.',
+      color: isExceeded ? AppColors.danger : AppColors.warning,
+    );
+  }
 
   final String title;
   final String subtitle;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -811,7 +1218,7 @@ class BudgetWarningCard extends StatelessWidget {
         color: AppColors.surface.withValues(alpha: 0.52),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: AppColors.warning.withValues(alpha: 0.75),
+          color: color.withValues(alpha: 0.75),
           width: 1,
         ),
       ),
@@ -822,7 +1229,7 @@ class BudgetWarningCard extends StatelessWidget {
             padding: const EdgeInsets.only(top: 2),
             child: Icon(
               Icons.warning_amber_rounded,
-              color: AppColors.warning,
+              color: color,
               size: 24,
             ),
           ),
