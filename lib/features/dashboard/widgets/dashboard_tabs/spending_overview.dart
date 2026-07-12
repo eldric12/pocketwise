@@ -1,0 +1,231 @@
+part of '../dashboard_tabs.dart';
+
+class OverviewCard extends StatefulWidget {
+  const OverviewCard({
+    super.key,
+    required this.items,
+  });
+
+  final List<ChartLegendItem> items;
+
+  @override
+  State<OverviewCard> createState() => _OverviewCardState();
+}
+
+class _OverviewCardState extends State<OverviewCard> {
+  int _touchedIndex = -1;
+
+  @override
+  void didUpdateWidget(covariant OverviewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_touchedIndex >= widget.items.length) _touchedIndex = -1;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = widget.items;
+    final total = items.fold<double>(0, (sum, item) => sum + item.amount);
+    final selectedItem = _touchedIndex >= 0 ? items[_touchedIndex] : null;
+    final centerLabel = selectedItem?.label.toUpperCase() ?? 'TOTAL EXP';
+    final centerAmount = selectedItem?.amount ?? total;
+
+    if (items.isEmpty) {
+      return GlassPanel(
+        child: SizedBox(
+          height: 116,
+          child: Row(
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.donut_large_rounded,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'No spending this month',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Add an expense to see your category breakdown.',
+                      style: GoogleFonts.inter(
+                        color: AppColors.mutedText,
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return GlassPanel(
+      child: Row(
+        children: [
+          SizedBox(
+            width: 142,
+            height: 142,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                PieChart(
+                  PieChartData(
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 39,
+                    startDegreeOffset: -90,
+                    pieTouchData: PieTouchData(
+                      touchCallback: (event, response) {
+                        final touchedIndex = response
+                                ?.touchedSection
+                                ?.touchedSectionIndex ??
+                            -1;
+                        final nextIndex = event.isInterestedForInteractions
+                            ? touchedIndex
+                            : -1;
+                        if (nextIndex != _touchedIndex) {
+                          setState(() => _touchedIndex = nextIndex);
+                        }
+                      },
+                    ),
+                    sections: items
+                        .asMap()
+                        .entries
+                        .map(
+                          (entry) => PieChartSectionData(
+                            value: entry.value.amount,
+                            color: entry.value.color,
+                            radius: entry.key == _touchedIndex ? 24 : 20,
+                            showTitle: false,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 72,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          centerLabel,
+                          maxLines: 1,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF8FB3E8),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.7,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    SizedBox(
+                      width: 74,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'RM ${centerAmount.toStringAsFixed(0)}',
+                          maxLines: 1,
+                          style: GoogleFonts.spaceGrotesk(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: items
+                  .asMap()
+                  .entries
+                  .map(
+                    (entry) => MouseRegion(
+                      onEnter: (_) {
+                        setState(() => _touchedIndex = entry.key);
+                      },
+                      onExit: (_) {
+                        setState(() => _touchedIndex = -1);
+                      },
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          setState(() {
+                            _touchedIndex = _touchedIndex == entry.key
+                                ? -1
+                                : entry.key;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: entry.value.color,
+                                  borderRadius: BorderRadius.circular(99),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '${entry.value.label} · RM${entry.value.amount.toStringAsFixed(0)}',
+                                  style: GoogleFonts.inter(
+                                    color: _touchedIndex == entry.key
+                                        ? Colors.white
+                                        : const Color(0xFFD7DEEA),
+                                    fontSize: 13,
+                                    fontWeight: _touchedIndex == entry.key
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
