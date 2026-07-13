@@ -1,50 +1,51 @@
 # PocketWise Flutter App
 
-PocketWise is the main Flutter mobile application in this repository. It is being built as an offline-first personal finance tracker for students and young adults, with a strong focus on fast expense logging, budget awareness, and a polished fintech-style UI.
+PocketWise is an offline-first personal finance application in active development. It is designed to help students and young adults record transactions quickly, understand monthly spending, and stay aware of category budgets.
 
-## Project Vision
-
-This project is not meant to be a barebones CRUD demo. The goal is to build a finance app that feels thoughtful, modern, and maintainable, while still being realistic for a university final-year project.
-
-Core product goals:
-
-- log income and expenses in a few seconds
-- keep data locally on-device
-- help users stay within category budgets
-- show spending patterns clearly
-- maintain a clean and scalable Flutter architecture
-
-## Tech Stack
-
-- Flutter
-- Dart
-- Riverpod
-- SQLite support via `sqflite`
-- `fl_chart` for charts
-- `google_fonts` for typography
+The product direction combines a premium fintech interface with a maintainable, feature-based Flutter architecture.
 
 ## Current Status
 
-Currently implemented:
+### Implemented
 
-- custom dark fintech-style UI direction
-- dashboard shell with bottom navigation
-- home/activity/budget/more sections
-- add transaction screen
-- refactored dashboard feature structure
-- mock/sample transaction data through Riverpod
+- premium dark navy dashboard and bottom navigation
+- dynamic monthly income, expense, and balance calculations
+- expense and income transaction entry
+- custom amount keypad
+- expense and income category selection
+- temporary custom category creation
+- transaction date, payment method, and memo fields
+- activity grouping and recent transaction summaries
+- dynamic spending breakdown by category
+- interactive donut chart with slice and legend selection
+- user-defined category budget limits
+- budget editing and removal
+- automatic near-limit and over-budget warnings
+- empty states for transactions, spending, and budgets
+- modular dashboard and transaction UI files
 
-Not implemented yet:
+### Not Implemented Yet
 
-- persistent local database
-- full create/read/update/delete transaction flow
-- category CRUD
-- dynamic budgets and warnings
-- reports screen
-- settings screen logic
-- theme switching
+- SQLite persistence for transactions, budgets, and categories
+- transaction editing from the activity screen
+- complete delete and undo user flow
+- permanent category management
+- reports and analytics screens
+- settings behavior and theme switching
+- automated unit and widget test coverage
 
-## Folder Structure
+All transaction and budget data currently lives in Riverpod memory and resets when the application restarts.
+
+## Tech Stack
+
+- Flutter and Dart
+- `flutter_riverpod` for application state
+- `fl_chart` for spending visualizations
+- `google_fonts` for typography
+- `sqflite` and `path` declared for the planned persistence layer
+- Material 3 components and platform-safe interactions
+
+## Project Structure
 
 ```text
 lib/
@@ -63,75 +64,106 @@ lib/
         │   └── dashboard_provider.dart
         ├── screens/
         │   ├── dashboard_screen.dart
-        │   └── new_transaction_screen.dart
+        │   ├── new_transaction_screen.dart
+        │   └── new_transaction/
+        │       ├── amount_controls.dart
+        │       ├── category_controls.dart
+        │       └── detail_controls.dart
         ├── utils/
         │   └── dashboard_ui_helpers.dart
         └── widgets/
             ├── dashboard_common_widgets.dart
             ├── dashboard_navigation.dart
-            └── dashboard_tabs.dart
+            ├── dashboard_tabs.dart
+            └── dashboard_tabs/
+                ├── activity_tab.dart
+                ├── budget_calculation.dart
+                ├── budget_widgets.dart
+                ├── budgets_tab.dart
+                ├── home_summary_widgets.dart
+                ├── home_tab.dart
+                ├── more_tab.dart
+                ├── spending_overview.dart
+                └── transaction_widgets.dart
 ```
 
-## How To Run
+`dashboard_tabs.dart` and `new_transaction_screen.dart` are library entry points. Their focused internal components use Dart `part` files so private implementation details can remain scoped to their parent library.
 
-From this directory:
+## Running The App
+
+From `flutter_project/`:
 
 ```bash
 flutter pub get
 flutter run
 ```
 
-To check code health:
+Choose a device explicitly when needed:
+
+```bash
+flutter devices
+flutter run -d <device-id>
+```
+
+## Code Quality
 
 ```bash
 flutter analyze
+flutter test
 ```
 
-## Working Style For Contributors
+Run formatting before committing:
 
-Please follow these project conventions when continuing the app:
+```bash
+dart format lib test
+```
 
-- keep files feature-based and reasonably small
-- avoid putting an entire feature into one large screen file
-- reuse widgets instead of duplicating UI
-- keep styling consistent with the premium fintech direction
-- prefer clean structure over quick hacks
+## Development Conventions
+
+- Keep financial values derived from state; do not hardcode sample totals, percentages, warnings, or dates.
+- Keep individual handwritten Dart files focused and preferably below 500 lines.
+- Place reusable feature widgets in the relevant component folder.
+- Keep calculations outside rendering code when they can be expressed as pure helpers.
+- Preserve the established color tokens in `app_colors.dart`.
+- Use clear empty, loading, validation, and error states.
+- Maintain minimum 48dp touch targets for interactive mobile controls.
+- Ensure new features work with both expense and income transactions where applicable.
+- Do not claim data is persistent until it is connected to the local database.
 
 ## UI Direction
 
-The current design direction is:
+PocketWise uses a restrained modern-finance visual language:
 
 - dark navy background
-- blue accent colors
-- white typography
-- premium finance-dashboard look
-- rounded but controlled surfaces
-- subtle glass/surface treatment
-- minimal, non-childish visual language
+- layered blue-gray surfaces
+- blue primary actions
+- semantic green, amber, and red financial states
+- strong white typography hierarchy
+- controlled corner radii and subtle borders
+- minimal gradients and decorative effects
+- clear spacing based on a 4dp/8dp rhythm
 
-Reference inspiration:
+Reference products include Revolut, Wise, Apple Wallet, and modern investment dashboards.
 
-- Revolut
-- Wise
-- Apple Wallet
-- modern banking and crypto dashboards
+## Recommended Next Steps
 
-## Suggested Next Development Order
+1. Add a repository and SQLite database layer.
+2. Persist transactions and restore them during provider initialization.
+3. Persist user-defined budgets and custom categories.
+4. Add transaction editing, deletion confirmation, and undo.
+5. Build reports from the same stored transaction source.
+6. Add unit tests for calculations and widget tests for critical flows.
 
-1. Add local persistence layer
-2. Connect real transaction creation to storage
-3. Add categories and budgets data models
-4. Replace mock budget warning with dynamic logic
-5. Build reports and settings modules
-6. Add testing and polish interactions
+## Contributor Handoff
 
-## Handoff Notes
+Start with `dashboard_screen.dart` to understand navigation and provider wiring. Follow the library entry points into their component folders, and keep state changes inside `dashboard_provider.dart` until a dedicated repository layer is introduced.
 
-If a teammate is picking this up:
+When changing financial behavior, verify these flows together:
 
-- start from `lib/features/dashboard/`
-- understand the current UI split before adding new screens
-- keep new modules aligned with the same feature-first structure
-- do not reintroduce oversized screen files
+- dashboard totals
+- spending category breakdown
+- recent activity
+- budget progress
+- dashboard warning state
 
-
+These views intentionally derive from the same transaction and budget state and should remain consistent.
