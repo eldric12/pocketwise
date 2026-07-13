@@ -18,85 +18,87 @@ class PocketWiseBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: 88,
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-        decoration: BoxDecoration(
-          color: context.themeColors.surface.withValues(alpha: 0.96),
-          border: Border(
-            top: BorderSide(color: context.themeColors.border),
+    return Container(
+      color: context.themeColors.surface.withValues(alpha: 0.96),
+      child: SafeArea(
+        top: false,
+        child: Container(
+          height: 88,
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: context.themeColors.border),
+            )
           ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: BottomNavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home_rounded,
-                label: 'Home',
-                active: currentIndex == 0,
-                onTap: () => onChanged(0),
+          child: Row(
+            children: [
+              Expanded(
+                child: BottomNavItem(
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home_rounded,
+                  label: 'Home',
+                  active: currentIndex == 0,
+                  onTap: () => onChanged(0),
+                ),
               ),
-            ),
-            Expanded(
-              child: BottomNavItem(
-                icon: Icons.menu_rounded,
-                activeIcon: Icons.menu_rounded,
-                label: 'Activity',
-                active: currentIndex == 1,
-                onTap: () => onChanged(1),
+              Expanded(
+                child: BottomNavItem(
+                  icon: Icons.menu_rounded,
+                  activeIcon: Icons.menu_rounded,
+                  label: 'Activity',
+                  active: currentIndex == 1,
+                  onTap: () => onChanged(1),
+                ),
               ),
-            ),
-            SizedBox(
-              width: 84,
-              child: Center(
-                child: GestureDetector(
-                  onTap: onAddPressed,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.42),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 28,
+              SizedBox(
+                width: 84,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: onAddPressed,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.42),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: BottomNavItem(
-                icon: Icons.adjust_outlined,
-                activeIcon: Icons.adjust_rounded,
-                label: 'Budget',
-                active: currentIndex == 2,
-                onTap: () => onChanged(2),
+              Expanded(
+                child: BottomNavItem(
+                  icon: Icons.adjust_outlined,
+                  activeIcon: Icons.adjust_rounded,
+                  label: 'Budget',
+                  active: currentIndex == 2,
+                  onTap: () => onChanged(2),
+                ),
               ),
-            ),
-            Expanded(
-              child: BottomNavItem(
-                icon: Icons.more_horiz_rounded,
-                activeIcon: Icons.more_horiz_rounded,
-                label: 'More',
-                active: currentIndex == 3,
-                onTap: () => onChanged(3),
+              Expanded(
+                child: BottomNavItem(
+                  icon: Icons.more_horiz_rounded,
+                  activeIcon: Icons.more_horiz_rounded,
+                  label: 'More',
+                  active: currentIndex == 3,
+                  onTap: () => onChanged(3),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,8 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:device_preview/device_preview.dart';
 
 import '../core/constants/app_colors.dart';
 import '../core/theme/app_theme_colors.dart';
@@ -21,6 +23,8 @@ class _PocketWiseAppState extends State<PocketWiseApp> {
     return MaterialApp(
       title: 'PocketWise',
       debugShowCheckedModeBanner: false,
+      useInheritedMediaQuery: true,
+      locale: DevicePreview.locale(context),
       themeMode: _themeMode,
       themeAnimationDuration: const Duration(milliseconds: 280),
       themeAnimationCurve: Curves.easeOutCubic,
@@ -39,7 +43,7 @@ class _PocketWiseAppState extends State<PocketWiseApp> {
             systemNavigationBarIconBrightness:
                 isDark ? Brightness.light : Brightness.dark,
           ),
-          child: child!,
+          child: DevicePreview.appBuilder(context, child),
         );
       },
       home: DashboardScreen(onToggleTheme: _toggleTheme),
