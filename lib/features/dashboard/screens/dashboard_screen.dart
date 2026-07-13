@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../models/transaction.dart';
 import '../providers/dashboard_provider.dart';
 import '../screens/new_transaction_screen.dart';
@@ -9,7 +9,12 @@ import '../widgets/dashboard_navigation.dart';
 import '../widgets/dashboard_tabs.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({
+    super.key,
+    required this.onToggleTheme,
+  });
+
+  final VoidCallback onToggleTheme;
 
   @override
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
@@ -24,7 +29,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final transactions = dashboardState.transactions;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.themeColors.background,
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 260),
@@ -60,6 +65,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         return HomeTab(
           transactions: transactions,
           budgetLimits: budgetLimits,
+          onSeeAll: _showActivity,
+          onToggleTheme: widget.onToggleTheme,
         );
       case 1:
         return ActivityTab(transactions: transactions);
@@ -86,8 +93,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         return HomeTab(
           transactions: transactions,
           budgetLimits: budgetLimits,
+          onSeeAll: _showActivity,
+          onToggleTheme: widget.onToggleTheme,
         );
     }
+  }
+
+  void _showActivity() {
+    setState(() => _currentIndex = 1);
   }
 
   Future<void> _openAddTransaction() async {

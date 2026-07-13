@@ -18,7 +18,7 @@ class MoreTab extends StatelessWidget {
           Text(
             'More',
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: context.themeColors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.w800,
             ),
@@ -53,4 +53,6 @@ class MoreTab extends StatelessWidget {
     );
   }
 }
+
+
 

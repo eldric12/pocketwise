@@ -1,11 +1,10 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../models/transaction.dart';
 import '../providers/dashboard_provider.dart';
 
@@ -58,10 +57,20 @@ class _NewTransactionScreenState
 
   double get _amount => double.tryParse(_amountText) ?? 0;
 
+  Color get _transactionAccent =>
+      _isExpense ? AppColors.danger : AppColors.success;
+
+  Color _transactionTextAccent(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return _transactionAccent;
+    }
+    return Color.lerp(_transactionAccent, Colors.black, 0.35)!;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.themeColors.background,
       body: SafeArea(
         child: CustomScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -80,11 +89,15 @@ class _NewTransactionScreenState
                   const SizedBox(height: 30),
                   _SectionLabel(
                     text: _isExpense ? 'SELECT CATEGORY' : 'INCOME SOURCE',
+                    accentColor: _transactionTextAccent(context),
                   ),
                   const SizedBox(height: 12),
                   _buildCategoryGrid(),
                   const SizedBox(height: 30),
-                  const _SectionLabel(text: 'ADDITIONAL DETAILS'),
+                  _SectionLabel(
+                    text: 'ADDITIONAL DETAILS',
+                    accentColor: _transactionTextAccent(context),
+                  ),
                   const SizedBox(height: 12),
                   _DetailTile(
                     icon: Icons.calendar_today_outlined,
@@ -117,8 +130,10 @@ class _NewTransactionScreenState
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 20, 20),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFF26344A))),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: context.themeColors.border),
+        ),
       ),
       child: Row(
         children: [
@@ -126,18 +141,18 @@ class _NewTransactionScreenState
             button: true,
             label: 'Close new transaction',
             child: Material(
-              color: AppColors.surface,
+              color: context.themeColors.surface,
               borderRadius: BorderRadius.circular(14),
               child: InkWell(
                 onTap: () => Navigator.of(context).pop(),
                 borderRadius: BorderRadius.circular(14),
-                child: const SizedBox(
+                child: SizedBox(
                   width: 50,
                   height: 50,
                   child: Icon(
                     Icons.arrow_back_ios_new_rounded,
                     size: 19,
-                    color: Color(0xFFC8D4E7),
+                    color: context.themeColors.textPrimary,
                   ),
                 ),
               ),
@@ -147,7 +162,7 @@ class _NewTransactionScreenState
           Text(
             'NEW TRANSACTION',
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: context.themeColors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.7,
@@ -164,17 +179,21 @@ class _NewTransactionScreenState
       curve: Curves.easeOutCubic,
       padding: const EdgeInsets.fromLTRB(16, 30, 16, 18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeColors.surface,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: _showAmountError
               ? AppColors.danger.withValues(alpha: 0.8)
-              : const Color(0xFF28364C),
+              : context.themeColors.border,
         ),
       ),
       child: Column(
         children: [
-          const _SectionLabel(text: 'ENTER AMOUNT', centered: true),
+          _SectionLabel(
+            text: 'ENTER AMOUNT',
+            centered: true,
+            accentColor: _transactionTextAccent(context),
+          ),
           const SizedBox(height: 12),
           Semantics(
             liveRegion: true,
@@ -186,9 +205,7 @@ class _NewTransactionScreenState
                 Text(
                   'RM',
                   style: GoogleFonts.spaceGrotesk(
-                    color: _isExpense
-                        ? const Color(0xFFFF5D7A)
-                        : AppColors.success,
+                    color: _transactionTextAccent(context),
                     fontSize: 29,
                     fontWeight: FontWeight.w700,
                   ),
@@ -204,7 +221,7 @@ class _NewTransactionScreenState
                     _amount.toStringAsFixed(2),
                     key: ValueKey(_amountText),
                     style: GoogleFonts.spaceMono(
-                      color: Colors.white,
+                      color: context.themeColors.textPrimary,
                       fontSize: 42,
                       fontWeight: FontWeight.w700,
                       fontFeatures: const [FontFeature.tabularFigures()],
@@ -272,12 +289,16 @@ class _NewTransactionScreenState
       ),
       itemBuilder: (context, index) {
         if (index == _categories.length) {
-          return _AddCategoryCard(onTap: _addCategory);
+          return _AddCategoryCard(
+            accentColor: _transactionAccent,
+            onTap: _addCategory,
+          );
         }
         final option = _categories[index];
         return _CategoryCard(
           option: option,
           selected: _category == option.label,
+          accentColor: _transactionAccent,
           onTap: () {
             HapticFeedback.selectionClick();
             setState(() => _category = option.label);
@@ -292,6 +313,7 @@ class _NewTransactionScreenState
       context: context,
       builder: (context) => _AddCategoryDialog(
         existingNames: _categories.map((category) => category.label).toSet(),
+        accentColor: _transactionAccent,
       ),
     );
 
@@ -305,7 +327,6 @@ class _NewTransactionScreenState
   }
 
   Widget _buildConfirmButton() {
-    final accent = _isExpense ? AppColors.primary : AppColors.success;
     return SizedBox(
       width: double.infinity,
       height: 64,
@@ -317,8 +338,8 @@ class _NewTransactionScreenState
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         style: FilledButton.styleFrom(
-          backgroundColor: accent,
-          foregroundColor: _isExpense ? Colors.white : AppColors.background,
+          backgroundColor: _transactionAccent,
+          foregroundColor: AppColors.background,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -367,10 +388,10 @@ class _NewTransactionScreenState
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: AppColors.primary,
-            surface: AppColors.surface,
-          ),
+          colorScheme: Theme.of(context).colorScheme.copyWith(
+                primary: AppColors.primary,
+                surface: context.themeColors.surface,
+              ),
         ),
         child: child!,
       ),

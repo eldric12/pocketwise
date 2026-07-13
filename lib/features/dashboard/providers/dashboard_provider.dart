@@ -3,16 +3,14 @@ import '../models/transaction.dart';
 
 class DashboardState {
   final List<Transaction> transactions;
-  final Map<String, double>? _budgetLimits;
+  final Map<String, double> budgetLimits;
   final bool isLoading;
 
   DashboardState({
     required this.transactions,
-    Map<String, double>? budgetLimits,
+    this.budgetLimits = const {},
     this.isLoading = false,
-  }) : _budgetLimits = budgetLimits;
-
-  Map<String, double> get budgetLimits => _budgetLimits ?? const {};
+  });
 
   DashboardState copyWith({
     List<Transaction>? transactions,

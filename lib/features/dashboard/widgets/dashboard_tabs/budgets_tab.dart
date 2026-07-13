@@ -30,7 +30,7 @@ class BudgetsTab extends StatelessWidget {
               Text(
                 'Budgets',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: context.themeColors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                 ),
@@ -43,7 +43,7 @@ class BudgetsTab extends StatelessWidget {
           Text(
             'Monthly limits per category — warned before you overspend.',
             style: GoogleFonts.inter(
-              color: AppColors.mutedText,
+              color: context.themeColors.textSecondary,
               fontSize: 13,
               height: 1.5,
             ),
@@ -107,4 +107,6 @@ class BudgetsTab extends StatelessWidget {
     if (result != null) onSetBudget(budget.category, result);
   }
 }
+
+
 

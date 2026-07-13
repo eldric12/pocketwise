@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
@@ -24,7 +25,7 @@ class SectionHeader extends StatelessWidget {
         Text(
           title,
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: context.themeColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
@@ -69,10 +70,10 @@ class GlassPanel extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.84),
+            color: context.themeColors.surface.withValues(alpha: 0.84),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.08),
+              color: context.themeColors.border,
             ),
             boxShadow: const [
               BoxShadow(
@@ -94,29 +95,47 @@ class FilterChipCard extends StatelessWidget {
     super.key,
     required this.label,
     this.selected = false,
+    this.onTap,
   });
 
   final String label;
   final bool selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-      decoration: BoxDecoration(
-        color: selected ? AppColors.primary : Colors.white.withValues(alpha: 0.05),
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: selected ? Colors.transparent : Colors.white.withValues(alpha: 0.08),
-        ),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.inter(
-          color: selected ? Colors.white : const Color(0xFF9CB2D8),
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+            decoration: BoxDecoration(
+              color: selected
+                  ? AppColors.primary
+                  : context.themeColors.surfaceSoft,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: selected
+                    ? Colors.transparent
+                    : context.themeColors.border,
+              ),
+            ),
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                color: selected ? Colors.white : context.themeColors.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -133,13 +152,13 @@ class MonthPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.secondary,
+        color: context.themeColors.surfaceSoft,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
         style: GoogleFonts.inter(
-          color: const Color(0xFFBFCBFF),
+          color: Theme.of(context).colorScheme.primary,
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
@@ -161,7 +180,7 @@ class CircleIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.04),
+      color: context.themeColors.surfaceSoft,
       shape: const CircleBorder(
         side: BorderSide(color: Color(0x1FFFFFFF)),
       ),
@@ -173,7 +192,7 @@ class CircleIconButton extends StatelessWidget {
           height: 42,
           child: Icon(
             icon,
-            color: Colors.white,
+            color: context.themeColors.textPrimary,
             size: 20,
           ),
         ),
@@ -201,9 +220,9 @@ class SegmentedToggle extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: context.themeColors.border),
       ),
       child: Row(
         children: [
@@ -255,7 +274,7 @@ class SegmentButton extends StatelessWidget {
           child: Text(
             label,
             style: GoogleFonts.inter(
-              color: selected ? Colors.white : const Color(0xFF9CB2D8),
+              color: selected ? Colors.white : context.themeColors.textSecondary,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
@@ -282,9 +301,9 @@ class LabeledField extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: context.themeColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,7 +311,7 @@ class LabeledField extends StatelessWidget {
           Text(
             label.toUpperCase(),
             style: GoogleFonts.inter(
-              color: const Color(0xFF8CB4F6),
+              color: Theme.of(context).colorScheme.primary,
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.1,
@@ -329,16 +348,16 @@ class ChoiceChipButton extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
           decoration: BoxDecoration(
-            color: selected ? AppColors.primary : Colors.white.withValues(alpha: 0.05),
+            color: selected ? AppColors.primary : context.themeColors.surfaceSoft,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: selected ? Colors.transparent : Colors.white.withValues(alpha: 0.08),
+              color: selected ? Colors.transparent : context.themeColors.border,
             ),
           ),
           child: Text(
             label,
             style: GoogleFonts.inter(
-              color: selected ? Colors.white : const Color(0xFF9CB2D8),
+              color: selected ? Colors.white : context.themeColors.textSecondary,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
@@ -371,19 +390,26 @@ class MoreRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           child: Row(
             children: [
-              Icon(icon, color: const Color(0xFF95A8FF), size: 18),
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: 18,
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   label,
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: context.themeColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: context.themeColors.textSecondary,
+              ),
             ],
           ),
         ),
@@ -399,7 +425,7 @@ class PanelDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 1,
-      color: Colors.white.withValues(alpha: 0.07),
+      color: context.themeColors.border,
       margin: const EdgeInsets.symmetric(horizontal: 16),
     );
   }
@@ -430,7 +456,7 @@ class EmptyStateCard extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: context.themeColors.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -439,7 +465,7 @@ class EmptyStateCard extends StatelessWidget {
           Text(
             subtitle,
             style: GoogleFonts.inter(
-              color: AppColors.mutedText,
+              color: context.themeColors.textSecondary,
               fontSize: 14,
               height: 1.5,
             ),

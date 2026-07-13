@@ -1,56 +1,99 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../core/constants/app_colors.dart';
+import '../core/theme/app_theme_colors.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
 
-class PocketWiseApp extends StatelessWidget {
+class PocketWiseApp extends StatefulWidget {
   const PocketWiseApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final baseTextTheme = GoogleFonts.interTextTheme(
-      ThemeData.dark().textTheme,
-    );
+  State<PocketWiseApp> createState() => _PocketWiseAppState();
+}
 
+class _PocketWiseAppState extends State<PocketWiseApp> {
+  ThemeMode _themeMode = ThemeMode.dark;
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PocketWise',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark,
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: AppColors.background,
-        primaryColor: AppColors.primary,
-        colorScheme: const ColorScheme.dark(
-          primary: AppColors.primary,
-          secondary: AppColors.secondary,
-          surface: AppColors.surface,
-          onPrimary: Colors.white,
-          onSecondary: Colors.white,
-          onSurface: Colors.white,
+      themeMode: _themeMode,
+      themeAnimationDuration: const Duration(milliseconds: 280),
+      themeAnimationCurve: Curves.easeOutCubic,
+      theme: _buildTheme(Brightness.light, AppThemeColors.light),
+      darkTheme: _buildTheme(Brightness.dark, AppThemeColors.dark),
+      builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final colors = context.themeColors;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: (isDark
+                  ? SystemUiOverlayStyle.light
+                  : SystemUiOverlayStyle.dark)
+              .copyWith(
+            statusBarColor: Colors.transparent,
+            systemNavigationBarColor: colors.background,
+            systemNavigationBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
+          ),
+          child: child!,
+        );
+      },
+      home: DashboardScreen(onToggleTheme: _toggleTheme),
+    );
+  }
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.dark
+          ? ThemeMode.light
+          : ThemeMode.dark;
+    });
+  }
+
+  ThemeData _buildTheme(Brightness brightness, AppThemeColors colors) {
+    final isDark = brightness == Brightness.dark;
+    final textTheme = GoogleFonts.interTextTheme(
+      isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
+    ).apply(
+      bodyColor: colors.textPrimary,
+      displayColor: colors.textPrimary,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      scaffoldBackgroundColor: colors.background,
+      primaryColor: AppColors.primary,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: isDark ? AppColors.primary : const Color(0xFF5369E8),
+        brightness: brightness,
+        primary: isDark ? AppColors.primary : const Color(0xFF5369E8),
+        surface: colors.surface,
+        onSurface: colors.textPrimary,
+      ),
+      extensions: [colors],
+      textTheme: textTheme,
+      splashFactory: InkRipple.splashFactory,
+      dividerColor: colors.border,
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: colors.surface,
+        contentTextStyle: textTheme.bodyMedium?.copyWith(
+          color: colors.textPrimary,
         ),
-        textTheme: baseTextTheme.apply(
-          bodyColor: Colors.white,
-          displayColor: Colors.white,
-        ),
-        splashFactory: InkRipple.splashFactory,
-        dividerColor: Colors.white10,
-        snackBarTheme: SnackBarThemeData(
-          backgroundColor: AppColors.surface,
-          contentTextStyle: baseTextTheme.bodyMedium?.copyWith(color: Colors.white),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          behavior: SnackBarBehavior.floating,
-        ),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        behavior: SnackBarBehavior.floating,
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
       ),
-      home: const DashboardScreen(),
     );
   }
 }

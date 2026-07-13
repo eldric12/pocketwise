@@ -5,10 +5,14 @@ class HomeTab extends StatelessWidget {
     super.key,
     required this.transactions,
     required this.budgetLimits,
+    required this.onSeeAll,
+    required this.onToggleTheme,
   });
 
   final List<Transaction> transactions;
   final Map<String, double> budgetLimits;
+  final VoidCallback onSeeAll;
+  final VoidCallback onToggleTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +61,7 @@ class HomeTab extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate(
               [
-                const HeaderSection(),
+                HeaderSection(onToggleTheme: onToggleTheme),
                 const SizedBox(height: 22),
                 BalanceCard(
                   balance: balance,
@@ -76,7 +80,7 @@ class HomeTab extends StatelessWidget {
                 SectionHeader(
                   title: 'Recent activity',
                   actionLabel: 'See all',
-                  onAction: () {},
+                  onAction: onSeeAll,
                 ),
                 const SizedBox(height: 12),
                 if (recent.isEmpty)
@@ -98,4 +102,3 @@ class HomeTab extends StatelessWidget {
     );
   }
 }
-

@@ -22,6 +22,7 @@ The product direction combines a premium fintech interface with a maintainable, 
 - budget editing and removal
 - automatic near-limit and over-budget warnings
 - empty states for transactions, spending, and budgets
+- animated light and dark theme switching
 - modular dashboard and transaction UI files
 
 ### Not Implemented Yet
@@ -31,7 +32,7 @@ The product direction combines a premium fintech interface with a maintainable, 
 - complete delete and undo user flow
 - permanent category management
 - reports and analytics screens
-- settings behavior and theme switching
+- settings behavior and persisted theme preference
 - automated unit and widget test coverage
 
 All transaction and budget data currently lives in Riverpod memory and resets when the application restarts.
@@ -53,8 +54,10 @@ lib/
 ├── app/
 │   └── app.dart
 ├── core/
-│   └── constants/
-│       └── app_colors.dart
+│   ├── constants/
+│   │   └── app_colors.dart
+│   └── theme/
+│       └── app_theme_colors.dart
 └── features/
     └── dashboard/
         ├── models/

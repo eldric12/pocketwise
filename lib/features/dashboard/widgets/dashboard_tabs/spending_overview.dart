@@ -57,7 +57,7 @@ class _OverviewCardState extends State<OverviewCard> {
                     Text(
                       'No spending this month',
                       style: GoogleFonts.inter(
-                        color: Colors.white,
+                        color: context.themeColors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -66,7 +66,7 @@ class _OverviewCardState extends State<OverviewCard> {
                     Text(
                       'Add an expense to see your category breakdown.',
                       style: GoogleFonts.inter(
-                        color: AppColors.mutedText,
+                        color: context.themeColors.textSecondary,
                         fontSize: 13,
                         height: 1.4,
                       ),
@@ -133,7 +133,7 @@ class _OverviewCardState extends State<OverviewCard> {
                           centerLabel,
                           maxLines: 1,
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF8FB3E8),
+                            color: Theme.of(context).colorScheme.primary,
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.7,
@@ -150,7 +150,7 @@ class _OverviewCardState extends State<OverviewCard> {
                           'RM ${centerAmount.toStringAsFixed(0)}',
                           maxLines: 1,
                           style: GoogleFonts.spaceGrotesk(
-                            color: Colors.white,
+                            color: context.themeColors.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                             fontFeatures: const [FontFeature.tabularFigures()],
@@ -205,8 +205,8 @@ class _OverviewCardState extends State<OverviewCard> {
                                   '${entry.value.label} · RM${entry.value.amount.toStringAsFixed(0)}',
                                   style: GoogleFonts.inter(
                                     color: _touchedIndex == entry.key
-                                        ? Colors.white
-                                        : const Color(0xFFD7DEEA),
+                                        ? context.themeColors.textPrimary
+                                        : context.themeColors.textSecondary,
                                     fontSize: 13,
                                     fontWeight: _touchedIndex == entry.key
                                         ? FontWeight.w700

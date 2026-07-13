@@ -15,7 +15,7 @@ class _TransactionTypeToggle extends StatelessWidget {
       height: 60,
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeColors.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -41,7 +41,6 @@ class _TransactionTypeToggle extends StatelessWidget {
     );
   }
 }
-
 class _TypeButton extends StatelessWidget {
   const _TypeButton({
     required this.label,
@@ -57,7 +56,7 @@ class _TypeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = expense ? const Color(0xFFFF5D7A) : AppColors.success;
+    final accent = expense ? AppColors.danger : AppColors.success;
     return Semantics(
       button: true,
       selected: selected,
@@ -77,7 +76,7 @@ class _TypeButton extends StatelessWidget {
             child: Text(
               label,
               style: GoogleFonts.inter(
-                color: selected ? accent : const Color(0xFF91A8CC),
+                color: selected ? accent : context.themeColors.textSecondary,
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
@@ -112,15 +111,15 @@ class _KeypadButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: Center(
             child: isBackspace
-                ? const Icon(
+                ? Icon(
                     Icons.backspace_outlined,
                     size: 24,
-                    color: Color(0xFFC7D3E6),
+                    color: context.themeColors.textSecondary,
                   )
                 : Text(
                     value,
                     style: GoogleFonts.spaceMono(
-                      color: Colors.white,
+                      color: context.themeColors.textPrimary,
                       fontSize: 23,
                       fontWeight: FontWeight.w700,
                     ),
@@ -131,4 +130,3 @@ class _KeypadButton extends StatelessWidget {
     );
   }
 }
-

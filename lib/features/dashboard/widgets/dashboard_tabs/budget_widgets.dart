@@ -36,16 +36,16 @@ class _SetBudgetDialogState extends State<_SetBudgetDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.themeColors.surface,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFF33435B)),
+        side: BorderSide(color: context.themeColors.border),
       ),
       title: Text(
         widget.currentLimit == null ? 'Set budget' : 'Edit budget',
         style: GoogleFonts.inter(
-          color: Colors.white,
+          color: context.themeColors.textPrimary,
           fontSize: 20,
           fontWeight: FontWeight.w700,
         ),
@@ -57,7 +57,7 @@ class _SetBudgetDialogState extends State<_SetBudgetDialog> {
           Text(
             'Monthly limit for ${widget.category}',
             style: GoogleFonts.inter(
-              color: AppColors.mutedText,
+              color: context.themeColors.textSecondary,
               fontSize: 14,
             ),
           ),
@@ -70,7 +70,7 @@ class _SetBudgetDialogState extends State<_SetBudgetDialog> {
               FilteringTextInputFormatter.allow(RegExp(r'^\d{0,7}(\.\d{0,2})?')),
             ],
             style: GoogleFonts.spaceGrotesk(
-              color: Colors.white,
+              color: context.themeColors.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.w700,
             ),
@@ -79,16 +79,16 @@ class _SetBudgetDialogState extends State<_SetBudgetDialog> {
               prefixText: 'RM ',
               errorText: _errorText,
               filled: true,
-              fillColor: AppColors.background,
-              labelStyle: GoogleFonts.inter(color: AppColors.mutedText),
+              fillColor: context.themeColors.background,
+              labelStyle: GoogleFonts.inter(color: context.themeColors.textSecondary),
               prefixStyle: GoogleFonts.spaceGrotesk(
-                color: Colors.white,
+                color: context.themeColors.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF3A4960)),
+                borderSide: BorderSide(color: context.themeColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -188,7 +188,7 @@ class BudgetCard extends StatelessWidget {
             Text(
               data.category,
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: context.themeColors.textPrimary,
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
@@ -217,7 +217,7 @@ class BudgetCard extends StatelessWidget {
               ? Text(
                   'No budget set — spending shown without a limit.',
                   style: GoogleFonts.inter(
-                    color: AppColors.mutedText,
+                    color: context.themeColors.textSecondary,
                     fontSize: 14,
                   ),
                 )
@@ -228,7 +228,7 @@ class BudgetCard extends StatelessWidget {
                         Text(
                           'RM ${data.spent!.toStringAsFixed(0)}',
                           style: GoogleFonts.spaceGrotesk(
-                            color: Colors.white,
+                            color: context.themeColors.textPrimary,
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
                             fontFeatures: const [FontFeature.tabularFigures()],
@@ -238,7 +238,7 @@ class BudgetCard extends StatelessWidget {
                         Text(
                           '/ RM ${data.limit!.toStringAsFixed(0)}',
                           style: GoogleFonts.inter(
-                            color: AppColors.mutedText,
+                            color: context.themeColors.textSecondary,
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
@@ -270,7 +270,7 @@ class BudgetCard extends StatelessWidget {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 8,
-                        backgroundColor: Colors.white.withValues(alpha: 0.05),
+                        backgroundColor: context.themeColors.surfaceSoft,
                         valueColor: AlwaysStoppedAnimation<Color>(data.color),
                       ),
                     ),
@@ -314,7 +314,7 @@ class BudgetWarningCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.52),
+        color: context.themeColors.surface.withValues(alpha: 0.52),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: color.withValues(alpha: 0.75),
@@ -340,7 +340,7 @@ class BudgetWarningCard extends StatelessWidget {
                 Text(
                   title,
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: context.themeColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -349,7 +349,7 @@ class BudgetWarningCard extends StatelessWidget {
                 Text(
                   subtitle,
                   style: GoogleFonts.inter(
-                    color: AppColors.mutedText,
+                    color: context.themeColors.textSecondary,
                     fontSize: 14,
                     height: 1.45,
                   ),

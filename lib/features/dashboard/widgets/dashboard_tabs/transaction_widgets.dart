@@ -42,7 +42,7 @@ class ActivityGroup extends StatelessWidget {
         Text(
           title,
           style: GoogleFonts.inter(
-            color: AppColors.mutedText,
+            color: context.themeColors.textSecondary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -97,7 +97,7 @@ class TransactionRow extends StatelessWidget {
                 Text(
                   transaction.title,
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: context.themeColors.textPrimary,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                     height: 1.15,
@@ -107,7 +107,7 @@ class TransactionRow extends StatelessWidget {
                 Text(
                   '${transaction.categoryLabel} · ${transaction.paymentMethod}',
                   style: GoogleFonts.inter(
-                    color: AppColors.mutedText,
+                    color: context.themeColors.textSecondary,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -134,4 +134,6 @@ class TransactionRow extends StatelessWidget {
     );
   }
 }
+
+
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 
 class PocketWiseBottomBar extends StatelessWidget {
   const PocketWiseBottomBar({
@@ -23,9 +24,9 @@ class PocketWiseBottomBar extends StatelessWidget {
         height: 88,
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF0C1426).withValues(alpha: 0.96),
+          color: context.themeColors.surface.withValues(alpha: 0.96),
           border: Border(
-            top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+            top: BorderSide(color: context.themeColors.border),
           ),
         ),
         child: Row(
@@ -132,13 +133,13 @@ class BottomNavItem extends StatelessWidget {
             Icon(
               active ? activeIcon : icon,
               size: 19,
-              color: active ? AppColors.primary : const Color(0xFF7487A9),
+              color: active ? AppColors.primary : context.themeColors.textSecondary,
             ),
             const SizedBox(height: 6),
             Text(
               label,
               style: GoogleFonts.inter(
-                color: active ? AppColors.primary : const Color(0xFF7487A9),
+                color: active ? AppColors.primary : context.themeColors.textSecondary,
                 fontSize: 11,
                 fontWeight: active ? FontWeight.w700 : FontWeight.w500,
               ),

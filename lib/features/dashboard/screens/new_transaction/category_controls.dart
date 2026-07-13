@@ -1,9 +1,13 @@
 part of '../new_transaction_screen.dart';
 
 class _AddCategoryDialog extends StatefulWidget {
-  const _AddCategoryDialog({required this.existingNames});
+  const _AddCategoryDialog({
+    required this.existingNames,
+    required this.accentColor,
+  });
 
   final Set<String> existingNames;
+  final Color accentColor;
 
   @override
   State<_AddCategoryDialog> createState() => _AddCategoryDialogState();
@@ -28,16 +32,16 @@ class _AddCategoryDialogState extends State<_AddCategoryDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.themeColors.surface,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFF33435B)),
+        side: BorderSide(color: context.themeColors.border),
       ),
       title: Text(
         'Add category',
         style: GoogleFonts.inter(
-          color: Colors.white,
+          color: context.themeColors.textPrimary,
           fontSize: 20,
           fontWeight: FontWeight.w700,
         ),
@@ -47,24 +51,24 @@ class _AddCategoryDialogState extends State<_AddCategoryDialog> {
         autofocus: true,
         maxLength: 20,
         textCapitalization: TextCapitalization.words,
-        style: GoogleFonts.inter(color: Colors.white, fontSize: 16),
+        style: GoogleFonts.inter(color: context.themeColors.textPrimary, fontSize: 16),
         decoration: InputDecoration(
           labelText: 'Category name',
           hintText: 'e.g. Health',
           errorText: _errorText,
           counterText: '',
           filled: true,
-          fillColor: AppColors.background,
-          labelStyle: GoogleFonts.inter(color: AppColors.mutedText),
+          fillColor: context.themeColors.background,
+          labelStyle: GoogleFonts.inter(color: context.themeColors.textSecondary),
           hintStyle: GoogleFonts.inter(color: const Color(0xFF64748B)),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF3A4960)),
+            borderSide: BorderSide(color: context.themeColors.border),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(
-              color: AppColors.primary,
+            borderSide: BorderSide(
+              color: widget.accentColor,
               width: 1.5,
             ),
           ),
@@ -90,8 +94,8 @@ class _AddCategoryDialogState extends State<_AddCategoryDialog> {
         FilledButton(
           onPressed: _submit,
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
+            backgroundColor: widget.accentColor,
+            foregroundColor: AppColors.background,
           ),
           child: const Text('Add category'),
         ),
@@ -117,12 +121,20 @@ class _AddCategoryDialogState extends State<_AddCategoryDialog> {
 }
 
 class _AddCategoryCard extends StatelessWidget {
-  const _AddCategoryCard({required this.onTap});
+  const _AddCategoryCard({
+    required this.accentColor,
+    required this.onTap,
+  });
 
+  final Color accentColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final foreground = Theme.of(context).brightness == Brightness.dark
+        ? accentColor
+        : Color.lerp(accentColor, Colors.black, 0.35)!;
+
     return Semantics(
       button: true,
       label: 'Add a new category',
@@ -134,10 +146,10 @@ class _AddCategoryCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.06),
+              color: accentColor.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.55),
+                color: accentColor.withValues(alpha: 0.55),
               ),
             ),
             child: Center(
@@ -148,12 +160,12 @@ class _AddCategoryCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.14),
+                      color: accentColor.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(11),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.add_rounded,
-                      color: AppColors.primary,
+                      color: foreground,
                       size: 25,
                     ),
                   ),
@@ -162,7 +174,7 @@ class _AddCategoryCard extends StatelessWidget {
                     'Add category',
                     maxLines: 1,
                     style: GoogleFonts.inter(
-                      color: const Color(0xFFA9B8FF),
+                      color: foreground,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -181,15 +193,21 @@ class _CategoryCard extends StatelessWidget {
   const _CategoryCard({
     required this.option,
     required this.selected,
+    required this.accentColor,
     required this.onTap,
   });
 
   final _CategoryOption option;
   final bool selected;
+  final Color accentColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final selectedForeground = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Color.lerp(accentColor, Colors.black, 0.35)!;
+
     return Semantics(
       button: true,
       selected: selected,
@@ -204,11 +222,11 @@ class _CategoryCard extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: selected
-                  ? AppColors.primary.withValues(alpha: 0.1)
-                  : AppColors.surface,
+                  ? accentColor.withValues(alpha: 0.1)
+                  : context.themeColors.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: selected ? AppColors.success : const Color(0xFF243249),
+                color: selected ? accentColor : context.themeColors.border,
               ),
             ),
             child: Stack(
@@ -222,14 +240,16 @@ class _CategoryCard extends StatelessWidget {
                         height: 44,
                         decoration: BoxDecoration(
                           color: selected
-                              ? AppColors.success.withValues(alpha: 0.12)
+                              ? accentColor.withValues(alpha: 0.12)
                               : const Color(0xFF253348),
                           borderRadius: BorderRadius.circular(11),
                         ),
                         child: Icon(
                           option.icon,
                           size: 23,
-                          color: selected ? Colors.white : const Color(0xFF93A7C5),
+                          color: selected
+                              ? selectedForeground
+                              : context.themeColors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -239,7 +259,9 @@ class _CategoryCard extends StatelessWidget {
                           option.label,
                           maxLines: 1,
                           style: GoogleFonts.inter(
-                            color: selected ? Colors.white : const Color(0xFF9AB8E4),
+                            color: selected
+                                ? selectedForeground
+                                : context.themeColors.textSecondary,
                             fontSize: 14,
                             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                           ),
@@ -249,12 +271,12 @@ class _CategoryCard extends StatelessWidget {
                   ),
                 ),
                 if (selected)
-                  const Positioned(
+                  Positioned(
                     right: 0,
                     top: 0,
                     child: CircleAvatar(
                       radius: 5,
-                      backgroundColor: AppColors.success,
+                      backgroundColor: accentColor,
                     ),
                   ),
               ],
@@ -265,4 +287,3 @@ class _CategoryCard extends StatelessWidget {
     );
   }
 }
-

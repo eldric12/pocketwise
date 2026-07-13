@@ -1,7 +1,12 @@
 part of '../dashboard_tabs.dart';
 
 class HeaderSection extends StatelessWidget {
-  const HeaderSection({super.key});
+  const HeaderSection({
+    super.key,
+    required this.onToggleTheme,
+  });
+
+  final VoidCallback onToggleTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +19,7 @@ class HeaderSection extends StatelessWidget {
             Text(
               'This month',
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: context.themeColors.textPrimary,
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
                 height: 1.05,
@@ -24,7 +29,7 @@ class HeaderSection extends StatelessWidget {
             Text(
               'Your money at a glance',
               style: GoogleFonts.inter(
-                color: AppColors.mutedText,
+                color: context.themeColors.textSecondary,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -32,7 +37,12 @@ class HeaderSection extends StatelessWidget {
           ],
         ),
         const Spacer(),
-        const CircleIconButton(icon: Icons.dark_mode_outlined),
+        CircleIconButton(
+          icon: Theme.of(context).brightness == Brightness.dark
+              ? Icons.light_mode_outlined
+              : Icons.dark_mode_outlined,
+          onPressed: onToggleTheme,
+        ),
       ],
     );
   }
@@ -59,7 +69,7 @@ class BalanceCard extends StatelessWidget {
           Text(
             'Total balance',
             style: GoogleFonts.inter(
-              color: AppColors.mutedText,
+              color: context.themeColors.textSecondary,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -68,7 +78,7 @@ class BalanceCard extends StatelessWidget {
           Text(
             formatAmount(balance, signed: false),
             style: GoogleFonts.spaceGrotesk(
-              color: Colors.white,
+              color: context.themeColors.textPrimary,
               fontSize: 28,
               fontWeight: FontWeight.w700,
               fontFeatures: const [FontFeature.tabularFigures()],
@@ -130,7 +140,7 @@ class MetricTile extends StatelessWidget {
             Text(
               label,
               style: GoogleFonts.inter(
-                color: AppColors.mutedText,
+                color: context.themeColors.textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -151,4 +161,5 @@ class MetricTile extends StatelessWidget {
     );
   }
 }
+
 

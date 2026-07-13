@@ -17,15 +17,15 @@ class _PaymentMethodDropdown extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 80),
       padding: const EdgeInsets.fromLTRB(18, 14, 8, 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: const Color(0xFF243249)),
+        color: context.themeColors.surface,
+        border: Border.all(color: context.themeColors.border),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-            const Icon(
+            Icon(
               Icons.credit_card_rounded,
-              color: Color(0xFF91A6C5),
+              color: context.themeColors.textSecondary,
               size: 24,
             ),
             const SizedBox(width: 18),
@@ -37,7 +37,7 @@ class _PaymentMethodDropdown extends StatelessWidget {
                   Text(
                     'PAYMENT METHOD',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF7898C6),
+                      color: context.themeColors.textSecondary,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.7,
@@ -47,7 +47,7 @@ class _PaymentMethodDropdown extends StatelessWidget {
                   Text(
                     value,
                     style: GoogleFonts.inter(
-                      color: Colors.white,
+                      color: context.themeColors.textPrimary,
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
                     ),
@@ -59,7 +59,7 @@ class _PaymentMethodDropdown extends StatelessWidget {
               initialValue: value,
               onSelected: onChanged,
               tooltip: 'Select payment method',
-              color: const Color(0xFF243249),
+              color: context.themeColors.surfaceSoft,
               surfaceTintColor: Colors.transparent,
               elevation: 12,
               position: PopupMenuPosition.under,
@@ -67,7 +67,7 @@ class _PaymentMethodDropdown extends StatelessWidget {
               constraints: const BoxConstraints(minWidth: 220),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
-                side: const BorderSide(color: Color(0xFF33435B)),
+                side: BorderSide(color: context.themeColors.border),
               ),
               itemBuilder: (context) => _methods
                   .map(
@@ -88,7 +88,7 @@ class _PaymentMethodDropdown extends StatelessWidget {
                             child: Text(
                               method,
                               style: GoogleFonts.inter(
-                                color: Colors.white,
+                                color: context.themeColors.textPrimary,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -105,12 +105,12 @@ class _PaymentMethodDropdown extends StatelessWidget {
                     ),
                   )
                   .toList(),
-              child: const SizedBox(
+              child: SizedBox(
                 width: 48,
                 height: 48,
                 child: Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFFC8D4E7),
+                  color: context.themeColors.textPrimary,
                   size: 24,
                 ),
               ),
@@ -146,7 +146,7 @@ class _DetailTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surface,
+      color: context.themeColors.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -155,12 +155,12 @@ class _DetailTile extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 80),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFF243249)),
+            border: Border.all(color: context.themeColors.border),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             children: [
-              Icon(icon, color: const Color(0xFF91A6C5), size: 24),
+              Icon(icon, color: context.themeColors.textSecondary, size: 24),
               const SizedBox(width: 18),
               Expanded(
                 child: Column(
@@ -170,7 +170,7 @@ class _DetailTile extends StatelessWidget {
                     Text(
                       label,
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF7898C6),
+                        color: context.themeColors.textSecondary,
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.7,
@@ -180,7 +180,7 @@ class _DetailTile extends StatelessWidget {
                     Text(
                       value,
                       style: GoogleFonts.inter(
-                        color: Colors.white,
+                        color: context.themeColors.textPrimary,
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
                       ),
@@ -188,7 +188,11 @@ class _DetailTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(trailing, color: const Color(0xFFC8D4E7), size: 21),
+              Icon(
+                trailing,
+                color: context.themeColors.textPrimary,
+                size: 21,
+              ),
             ],
           ),
         ),
@@ -208,18 +212,18 @@ class _MemoField extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 88),
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF243249)),
+        border: Border.all(color: context.themeColors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 12),
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
             child: Icon(
               Icons.note_alt_outlined,
-              color: Color(0xFF91A6C5),
+              color: context.themeColors.textSecondary,
               size: 24,
             ),
           ),
@@ -229,21 +233,21 @@ class _MemoField extends StatelessWidget {
               controller: controller,
               maxLength: 80,
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: context.themeColors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 labelText: 'MEMO / NOTES',
                 labelStyle: GoogleFonts.inter(
-                  color: const Color(0xFF7898C6),
+                  color: context.themeColors.textSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.6,
                 ),
                 hintText: 'e.g. Lunch, groceries, monthly pay',
                 hintStyle: GoogleFonts.inter(
-                  color: const Color(0xFF587091),
+                  color: context.themeColors.textSecondary,
                   fontSize: 15,
                 ),
                 counterText: '',
@@ -259,23 +263,29 @@ class _MemoField extends StatelessWidget {
 }
 
 class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({required this.text, this.centered = false});
+  const _SectionLabel({
+    required this.text,
+    required this.accentColor,
+    this.centered = false,
+  });
 
   final String text;
+  final Color accentColor;
   final bool centered;
 
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: centered ? Alignment.center : Alignment.centerLeft,
-      child: Text(
-        text,
+      child: AnimatedDefaultTextStyle(
+        duration: const Duration(milliseconds: 200),
         style: GoogleFonts.inter(
-          color: const Color(0xFF8FB3E8),
+          color: accentColor,
           fontSize: 12,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2,
         ),
+        child: Text(text),
       ),
     );
   }
@@ -287,4 +297,3 @@ class _CategoryOption {
   final String label;
   final IconData icon;
 }
-
