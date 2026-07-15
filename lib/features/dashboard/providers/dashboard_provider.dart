@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../auth/providers/auth_provider.dart';
+import '../../auth/services/transaction_service.dart';
 import '../models/transaction.dart';
 
 class DashboardState {
@@ -26,21 +29,34 @@ class DashboardState {
 }
 
 class DashboardNotifier extends StateNotifier<DashboardState> {
-  DashboardNotifier() : super(DashboardState(transactions: [])) {
+  DashboardNotifier({required this.userId})
+      : super(DashboardState(transactions: [], isLoading: true)) {
     _loadInitialData();
   }
 
-  void _loadInitialData() {
-    state = DashboardState(transactions: []);
+  final String? userId;
+
+  Future<void> _loadInitialData() async {
+    if (userId == null) {
+      state = DashboardState(transactions: [], isLoading: false);
+      return;
+    }
+    final transactions =
+        await TransactionService.instance.getTransactionsForUser(userId!);
+    state = state.copyWith(transactions: transactions, isLoading: false);
   }
 
-  void addTransaction(Transaction transaction) {
+  Future<void> addTransaction(Transaction transaction) async {
+    if (userId == null) return;
+    await TransactionService.instance.insertTransaction(userId!, transaction);
     state = state.copyWith(
       transactions: [transaction, ...state.transactions],
     );
   }
 
-  void deleteTransaction(String id) {
+  Future<void> deleteTransaction(String id) async {
+    if (userId == null) return;
+    await TransactionService.instance.deleteTransaction(userId!, id);
     state = state.copyWith(
       transactions: state.transactions.where((t) => t.id != id).toList(),
     );
@@ -59,6 +75,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   }
 }
 
-final dashboardProvider = StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
-  return DashboardNotifier();
+final dashboardProvider =
+    StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
+  final userId = ref.watch(currentUserIdProvider);
+  return DashboardNotifier(userId: userId);
 });

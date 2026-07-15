@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_theme_colors.dart';
 import '../../dashboard/screens/dashboard_screen.dart';
+import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
 import 'signup_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key, required this.onToggleTheme});
 
   final VoidCallback onToggleTheme;
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _userIdController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -44,24 +46,38 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorText = null;
     });
 
-    final error = await AuthService.instance.login(
-      userId: userId,
-      password: password,
-    );
+    try {
+      final error = await AuthService.instance.login(
+        userId: userId,
+        password: password,
+      );
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+      if (!mounted) return;
 
-    if (error != null) {
-      setState(() => _errorText = error);
-      return;
+      if (error != null) {
+        setState(() {
+          _isLoading = false;
+          _errorText = error;
+        });
+        return;
+      }
+
+      ref.read(currentUserIdProvider.notifier).state =
+          AuthService.instance.currentUserId;
+      setState(() => _isLoading = false);
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(onToggleTheme: widget.onToggleTheme),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorText = 'Something went wrong. Please try again.';
+      });
     }
-
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => DashboardScreen(onToggleTheme: widget.onToggleTheme),
-      ),
-    );
   }
 
   void _goToSignup() {
