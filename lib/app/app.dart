@@ -7,6 +7,7 @@ import 'package:device_preview/device_preview.dart';
 import '../core/constants/app_colors.dart';
 import '../core/theme/app_theme_colors.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
+import '../features/auth/screens/login_screen.dart';
 
 class PocketWiseApp extends StatefulWidget {
   const PocketWiseApp({super.key});
@@ -46,7 +47,7 @@ class _PocketWiseAppState extends State<PocketWiseApp> {
           child: DevicePreview.appBuilder(context, child),
         );
       },
-      home: DashboardScreen(onToggleTheme: _toggleTheme),
+      home: LoginScreen(onToggleTheme: _toggleTheme),
     );
   }
 

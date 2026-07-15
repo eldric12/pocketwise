@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  crypto: ^3.0.3
+  sqflite_common_ffi_web: ^1.1.1
   
   # State Management
   flutter_riverpod: ^2.4.9
