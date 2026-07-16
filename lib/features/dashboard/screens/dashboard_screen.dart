@@ -83,6 +83,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         );
       case 3:
         return MoreTab(
+          onToggleTheme:  widget.onToggleTheme,
           onOpenReports: () {
             setState(() {
               _currentIndex = 0;

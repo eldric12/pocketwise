@@ -4,9 +4,11 @@ class MoreTab extends StatelessWidget {
   const MoreTab({
     super.key,
     required this.onOpenReports,
+    required this.onToggleTheme
   });
 
   final VoidCallback onOpenReports;
+  final VoidCallback onToggleTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,14 @@ class MoreTab extends StatelessWidget {
                 MoreRow(
                   icon: Icons.settings_outlined,
                   label: 'Settings',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(
+                        builder: (context) => SettingTab(onToggleTheme: onToggleTheme)
+                      )
+                    );
+                  },
                 ),
               ],
             ),

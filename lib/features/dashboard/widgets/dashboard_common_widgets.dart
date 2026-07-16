@@ -374,14 +374,26 @@ class MoreRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.switchValue,
+    this.onSwitchChanged,
+    this.labelColor,
+    this.trailingText
   });
 
-  final IconData icon;
+  final IconData? icon;
   final String label;
   final VoidCallback onTap;
+  final dynamic labelColor;
+  final String? trailingText;
+
+  final bool? switchValue;
+  final ValueChanged<bool>? onSwitchChanged;
 
   @override
   Widget build(BuildContext context) {
+    final hasSwitch = switchValue != null && onSwitchChanged != null;
+    final textColor = labelColor ?? context.themeColors.textPrimary;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -400,16 +412,31 @@ class MoreRow extends StatelessWidget {
                 child: Text(
                   label,
                   style: GoogleFonts.inter(
-                    color: context.themeColors.textPrimary,
+                    color: textColor,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: context.themeColors.textSecondary,
-              ),
+              if (hasSwitch)
+                Switch(
+                  value: switchValue!,
+                  onChanged: onSwitchChanged,
+                )
+              else if (trailingText != null)
+                Text(
+                  trailingText!,
+                  style: GoogleFonts.inter(
+                    color: context.themeColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  )
+                )
+              else
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: context.themeColors.textSecondary,
+                ),
             ],
           ),
         ),
