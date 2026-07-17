@@ -31,7 +31,7 @@ class HomeTab extends StatelessWidget {
         .fold<double>(0, (sum, tx) => sum + tx.amount);
     final balance = income - expense;
 
-    final chartItems = getMonthlyChartItems(transactions);
+    final chartItems = getMonthlyChartItems(transactions, now);
     final budgetAlerts = _buildMonthlyBudgets(transactions, now, budgetLimits)
         .where(
           (budget) =>
