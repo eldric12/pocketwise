@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_theme_colors.dart';
 import '../services/auth_service.dart';
+import '../widgets/auth_header_wave.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key, required this.onToggleTheme});
@@ -18,8 +19,9 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _agreedToTerms = false;
+  bool _obscureConfirmPassword = true;
   bool _isLoading = false;
   String? _errorText;
 
@@ -30,6 +32,7 @@ class _SignupScreenState extends State<SignupScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -37,8 +40,9 @@ class _SignupScreenState extends State<SignupScreen> {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       setState(() => _errorText = 'Please fill in all fields.');
       return;
     }
@@ -50,8 +54,8 @@ class _SignupScreenState extends State<SignupScreen> {
       setState(() => _errorText = 'Password must be at least 6 characters.');
       return;
     }
-    if (!_agreedToTerms) {
-      setState(() => _errorText = 'Please agree to the Terms & Conditions.');
+    if (password != confirmPassword) {
+      setState(() => _errorText = 'Passwords do not match.');
       return;
     }
 
@@ -60,25 +64,32 @@ class _SignupScreenState extends State<SignupScreen> {
       _errorText = null;
     });
 
-    final error = await AuthService.instance.signUp(
-      name: name,
-      email: email,
-      password: password,
-    );
+    try {
+      final error = await AuthService.instance.signUp(
+        name: name,
+        email: email,
+        password: password,
+      );
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
-    if (error != null) {
-      setState(() => _errorText = error);
-      return;
+      if (error != null) {
+        setState(() => _errorText = error);
+        return;
+      }
+
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created. Please log in.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorText = 'Something went wrong. Please try again.';
+      });
     }
-
-    // Signup successful — go back to Login so the user signs in.
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Account created. Please log in.')),
-    );
   }
 
   @override
@@ -87,155 +98,197 @@ class _SignupScreenState extends State<SignupScreen> {
 
     return Scaffold(
       backgroundColor: colors.background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Create Your Account',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: colors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                TextField(
-                  controller: _nameController,
-                  style: GoogleFonts.inter(color: colors.textPrimary),
-                  decoration: _fieldDecoration('Name', colors),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  style: GoogleFonts.inter(color: colors.textPrimary),
-                  decoration: _fieldDecoration('Email', colors),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  style: GoogleFonts.inter(color: colors.textPrimary),
-                  decoration: _fieldDecoration('Password', colors).copyWith(
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: colors.textSecondary,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() => _obscurePassword = !_obscurePassword);
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
+      body: Column(
+        children: [
+          AuthHeaderWave(onBackPressed: () => Navigator.of(context).pop()),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Checkbox(
-                      value: _agreedToTerms,
-                      activeColor: AppColors.primary,
-                      onChanged: (value) {
-                        setState(() => _agreedToTerms = value ?? false);
-                      },
+                    const SizedBox(height: 40),
+                    Text(
+                      'Sign up',
+                      style: GoogleFonts.inter(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: colors.textPrimary,
+                      ),
                     ),
-                    Expanded(
-                      child: RichText(
-                        text: TextSpan(
-                          style: GoogleFonts.inter(color: colors.textSecondary, fontSize: 13),
-                          children: [
-                            const TextSpan(text: 'I agree with '),
-                            TextSpan(
-                              text: 'Terms & Conditions',
-                              style: GoogleFonts.inter(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    _buildLabel('Full Name', colors),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _nameController,
+                      style: GoogleFonts.inter(color: colors.textPrimary),
+                      decoration: _fieldDecoration(
+                        colors,
+                        hint: 'Enter your name',
+                        icon: Icons.person_outline_rounded,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    _buildLabel('Email', colors),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: GoogleFonts.inter(color: colors.textPrimary),
+                      decoration: _fieldDecoration(
+                        colors,
+                        hint: 'your@email.com',
+                        icon: Icons.mail_outline_rounded,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    _buildLabel('Password', colors),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      style: GoogleFonts.inter(color: colors.textPrimary),
+                      decoration: _fieldDecoration(
+                        colors,
+                        hint: 'Enter your password',
+                        icon: Icons.lock_outline_rounded,
+                      ).copyWith(
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            color: colors.textSecondary,
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            setState(() => _obscurePassword = !_obscurePassword);
+                          },
                         ),
                       ),
                     ),
-                  ],
-                ),
-                if (_errorText != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _errorText!,
-                    style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 48,
-                  child: FilledButton(
-                    onPressed: _isLoading ? null : _handleSignup,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 18),
+                    _buildLabel('Confirm Password', colors),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscureConfirmPassword,
+                      style: GoogleFonts.inter(color: colors.textPrimary),
+                      decoration: _fieldDecoration(
+                        colors,
+                        hint: 'Confirm your password',
+                        icon: Icons.lock_outline_rounded,
+                      ).copyWith(
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            color: colors.textSecondary,
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                          },
+                        ),
                       ),
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(
-                            'Sign Up',
+                    if (_errorText != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        _errorText!,
+                        style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13),
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 52,
+                      child: FilledButton(
+                        onPressed: _isLoading ? null : _handleSignup,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                'Create Account',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Already have an Account? ',
+                          style: GoogleFonts.inter(color: colors.textSecondary, fontSize: 13),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Text(
+                            'Sign in',
                             style: GoogleFonts.inter(
+                              color: AppColors.primary,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              fontSize: 13,
                             ),
                           ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Have an account? ',
-                      style: GoogleFonts.inter(color: colors.textSecondary, fontSize: 13),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'Login',
-                        style: GoogleFonts.inter(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
                         ),
-                      ),
+                      ],
                     ),
+                    const SizedBox(height: 24),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  InputDecoration _fieldDecoration(String hint, AppThemeColors colors) {
+  Widget _buildLabel(String text, AppThemeColors colors) {
+    return Text(
+      text,
+      style: GoogleFonts.inter(
+        color: colors.textPrimary,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+
+  InputDecoration _fieldDecoration(
+    AppThemeColors colors, {
+    required String hint,
+    required IconData icon,
+  }) {
     return InputDecoration(
       hintText: hint,
       hintStyle: GoogleFonts.inter(color: colors.textSecondary),
+      prefixIcon: Icon(icon, color: colors.textSecondary, size: 20),
       filled: true,
       fillColor: colors.surface,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

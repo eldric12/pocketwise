@@ -52,14 +52,13 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'user-not-found':
-          return 'No account found with that email.';
         case 'wrong-password':
         case 'invalid-credential':
-          return 'Incorrect password.';
+          return 'Incorrect email or password.';
         case 'invalid-email':
           return 'Please enter a valid email.';
         default:
-          return e.message ?? 'Something went wrong. Please try again.';
+          return e.message ?? 'Incorrect email or password.';
       }
     }
   }
