@@ -52,21 +52,38 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'user-not-found':
-          return 'No account found with that email.';
         case 'wrong-password':
         case 'invalid-credential':
-          return 'Incorrect password.';
+          return 'Incorrect email or password.';
         case 'invalid-email':
           return 'Please enter a valid email.';
         default:
-          return e.message ?? 'Something went wrong. Please try again.';
+          return e.message ?? 'Incorrect email or password.';
       }
     }
   }
 
+  Future<String?> sendPasswordReset({required String email}) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    try {
+      await _auth.sendPasswordResetEmail(email: normalizedEmail);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          return null; // don't leak account existence
+        case 'invalid-email':
+          return 'Please enter a valid email.';
+        default:
+          return 'Something went wrong. Please try again.';
+      }
+    }
+  }
+  
   String? get currentUserId => _auth.currentUser?.uid;
 
   Future<void> logout() async {
     await _auth.signOut();
   }
+
 }
