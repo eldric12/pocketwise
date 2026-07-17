@@ -100,7 +100,7 @@ class _SignupScreenState extends State<SignupScreen> {
       backgroundColor: colors.background,
       body: Column(
         children: [
-          AuthHeaderWave(onBackPressed: () => Navigator.of(context).pop()),
+          AuthHeaderWave(onBackPressed: () => Navigator.of(context).pop(), centerBrand: true),
           Expanded(
             child: SafeArea(
               top: false,

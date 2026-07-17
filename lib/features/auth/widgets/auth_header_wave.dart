@@ -90,7 +90,7 @@ class AuthHeaderWave extends StatelessWidget {
   const AuthHeaderWave({
     super.key,
     this.onBackPressed,
-    this.height = 260,
+    this.height = 300,
     this.showBrand = true,
     this.centerBrand = false,
   });
