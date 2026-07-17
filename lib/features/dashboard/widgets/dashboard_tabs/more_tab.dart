@@ -3,10 +3,12 @@ part of '../dashboard_tabs.dart';
 class MoreTab extends StatelessWidget {
   const MoreTab({
     super.key,
+    // required this.transactions,
     required this.onOpenReports,
     required this.onToggleTheme
   });
 
+  // final List<Transaction> transactions;
   final VoidCallback onOpenReports;
   final VoidCallback onToggleTheme;
 

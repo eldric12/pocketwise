@@ -20,3 +20,4 @@ part 'dashboard_tabs/spending_overview.dart';
 part 'dashboard_tabs/transaction_widgets.dart';
 part 'dashboard_tabs/budget_widgets.dart';
 part 'dashboard_tabs/setting_tab.dart';
+part 'dashboard_tabs/report_analytics.dart';

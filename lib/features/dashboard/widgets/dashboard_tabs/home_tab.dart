@@ -1,16 +1,37 @@
 part of '../dashboard_tabs.dart';
 
+List<ChartLegendItem> getMonthlyChartItems(List<Transaction> transactions) {
+  final now = DateTime.now();
+
+  final spendingByCategory = <String, double>{};
+
+  for (final tx in transactions.where((tx) =>
+      tx.isExpense &&
+      tx.date.year == now.year &&
+      tx.date.month == now.month)) {
+    spendingByCategory.update(
+      tx.categoryLabel,
+      (value) => value + tx.amount,
+      ifAbsent: () => tx.amount,
+    );
+  }
+
+  return buildChartItems(spendingByCategory);
+}
+
 class HomeTab extends StatelessWidget {
   const HomeTab({
     super.key,
     required this.transactions,
     required this.budgetLimits,
+    required this.onOpenReports,
     required this.onSeeAll,
     required this.onToggleTheme,
   });
 
   final List<Transaction> transactions;
   final Map<String, double> budgetLimits;
+  final VoidCallback onOpenReports;
   final VoidCallback onSeeAll;
   final VoidCallback onToggleTheme;
 
@@ -28,17 +49,8 @@ class HomeTab extends StatelessWidget {
         .where((tx) => tx.isExpense)
         .fold<double>(0, (sum, tx) => sum + tx.amount);
     final balance = income - expense;
-    final spendingByCategory = <String, double>{};
 
-    for (final tx in monthlyTransactions.where((tx) => tx.isExpense)) {
-      spendingByCategory.update(
-        tx.categoryLabel,
-        (value) => value + tx.amount,
-        ifAbsent: () => tx.amount,
-      );
-    }
-
-    final chartItems = buildChartItems(spendingByCategory);
+    final chartItems = getMonthlyChartItems(transactions);
     final budgetAlerts = _buildMonthlyBudgets(transactions, now, budgetLimits)
         .where(
           (budget) =>
@@ -72,7 +84,7 @@ class HomeTab extends StatelessWidget {
                 SectionHeader(
                   title: 'Spending overview',
                   actionLabel: 'Reports',
-                  onAction: () {},
+                  onAction: onOpenReports,
                 ),
                 const SizedBox(height: 12),
                 OverviewCard(items: chartItems),
