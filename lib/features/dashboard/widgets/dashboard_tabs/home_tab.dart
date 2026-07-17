@@ -95,22 +95,3 @@ class HomeTab extends StatelessWidget {
     );
   }
 }
-
-List<ChartLegendItem> getMonthlyChartItems(List<Transaction> transactions) {
-  final now = DateTime.now();
-
-  final spendingByCategory = <String, double>{};
-
-  for (final tx in transactions.where((tx) =>
-      tx.isExpense &&
-      tx.date.year == now.year &&
-      tx.date.month == now.month)) {
-    spendingByCategory.update(
-      tx.categoryLabel,
-      (value) => value + tx.amount,
-      ifAbsent: () => tx.amount,
-    );
-  }
-
-  return buildChartItems(spendingByCategory);
-}

@@ -1,5 +1,6 @@
 part of '../dashboard_tabs.dart';
 
+// Line Chart
 enum _TrendFilter { weekly, monthly, yearly }
 
 List<ChartLegendItem> getWeeklyChartItems(List<Transaction> transactions) {
@@ -81,6 +82,72 @@ List<ChartLegendItem> getYearlyChartItems(List<Transaction> transactions) {
   );
 }
 
+// Pie Chart
+List<ChartLegendItem> getWeeklyCategoryItems(
+    List<Transaction> transactions,
+) {
+  final now = DateTime.now();
+  final startOfWeek = DateTime(now.year, now.month, now.day)
+      .subtract(Duration(days: now.weekday - 1));
+
+  final spendingByCategory = <String, double>{};
+
+  for (final tx in transactions.where((tx) {
+    final diff = tx.date.difference(startOfWeek).inDays;
+
+    return tx.isExpense &&
+        diff >= 0 &&
+        diff < 7;
+  })) {
+    spendingByCategory.update(
+      tx.categoryLabel,
+      (value) => value + tx.amount,
+      ifAbsent: () => tx.amount,
+    );
+  }
+
+  return buildChartItems(spendingByCategory);
+}
+
+List<ChartLegendItem> getMonthlyChartItems(List<Transaction> transactions) {
+  final now = DateTime.now();
+
+  final spendingByCategory = <String, double>{};
+
+  for (final tx in transactions.where((tx) =>
+      tx.isExpense &&
+      tx.date.year == now.year &&
+      tx.date.month == now.month)) {
+    spendingByCategory.update(
+      tx.categoryLabel,
+      (value) => value + tx.amount,
+      ifAbsent: () => tx.amount,
+    );
+  }
+
+  return buildChartItems(spendingByCategory);
+}
+
+List<ChartLegendItem> getYearlyCategoryItems(
+    List<Transaction> transactions,
+) {
+  final now = DateTime.now();
+
+  final spendingByCategory = <String, double>{};
+
+  for (final tx in transactions.where((tx) =>
+      tx.isExpense &&
+      tx.date.year == now.year)) {
+    spendingByCategory.update(
+      tx.categoryLabel,
+      (value) => value + tx.amount,
+      ifAbsent: () => tx.amount,
+    );
+  }
+
+  return buildChartItems(spendingByCategory);
+}
+
 class ReportAnalytics extends StatefulWidget {
   const ReportAnalytics({
     super.key,
@@ -111,9 +178,22 @@ class _ReportAnalytics extends State<ReportAnalytics> {
     }
   }
 
+  List<ChartLegendItem> get _categoryItems {
+  switch (_filter) {
+    case _TrendFilter.weekly:
+      return getWeeklyCategoryItems(widget.transactions);
+
+    case _TrendFilter.monthly:
+      return getMonthlyChartItems(widget.transactions);
+
+    case _TrendFilter.yearly:
+      return getYearlyCategoryItems(widget.transactions);
+  }
+}
+
   @override
   Widget build(BuildContext context) {
-    final chartItems = getMonthlyChartItems(widget.transactions);
+    final chartItems = _categoryItems;
     final trendItems = _trendItems;
 
     return Scaffold(
@@ -170,7 +250,7 @@ class _ReportAnalytics extends State<ReportAnalytics> {
                 )
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 26),
             Text(
               'Spending trend',
               style: GoogleFonts.inter(
