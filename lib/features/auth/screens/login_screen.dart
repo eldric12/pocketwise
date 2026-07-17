@@ -97,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: colors.background,
       body: Column(
         children: [
-          const AuthHeaderWave(), // no back button — Login is the current entry point
+          const AuthHeaderWave(), // no back button — reached only via the splash timer
           Expanded(
             child: SafeArea(
               top: false,

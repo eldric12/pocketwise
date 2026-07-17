@@ -92,6 +92,7 @@ class AuthHeaderWave extends StatelessWidget {
     this.onBackPressed,
     this.height = 260,
     this.showBrand = true,
+    this.centerBrand = false,
   });
 
   /// Pass null to hide the back button (e.g. on the screen that has no
@@ -99,6 +100,10 @@ class AuthHeaderWave extends StatelessWidget {
   final VoidCallback? onBackPressed;
   final double height;
   final bool showBrand;
+
+  /// When true, shows the brand centered and larger (used on Welcome only).
+  /// When false, shows it top-left, below the back button (Login/Signup).
+  final bool centerBrand;
 
   @override
   Widget build(BuildContext context) {
@@ -119,13 +124,13 @@ class AuthHeaderWave extends StatelessWidget {
             Positioned.fill(
               child: CustomPaint(painter: _TopographicPatternPainter()),
             ),
-            SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (onBackPressed != null)
-                    Padding(
+            if (centerBrand) ...[
+              if (onBackPressed != null)
+                SafeArea(
+                  bottom: false,
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
                       padding: const EdgeInsets.only(left: 8, top: 4),
                       child: IconButton(
                         onPressed: onBackPressed,
@@ -135,34 +140,76 @@ class AuthHeaderWave extends StatelessWidget {
                           size: 20,
                         ),
                       ),
-                    )
-                  else
-                    const SizedBox(height: 48),
-                  if (showBrand)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 24, top: 8),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.account_balance_wallet_rounded,
-                            color: Colors.white,
-                            size: 34,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'PocketWise',
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                ],
+                  ),
+                ),
+              if (showBrand)
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.account_balance_wallet_rounded,
+                        color: Colors.white,
+                        size: 44,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'PocketWise',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ] else
+              SafeArea(
+                bottom: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (onBackPressed != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8, top: 4),
+                        child: IconButton(
+                          onPressed: onBackPressed,
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox(height: 48),
+                    if (showBrand)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 24, top: 12),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.account_balance_wallet_rounded,
+                              color: Colors.white,
+                              size: 34,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'PocketWise',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
