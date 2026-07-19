@@ -1,7 +1,11 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocketwise/features/auth/services/auth_service.dart';
+import 'package:pocketwise/features/auth/screens/login_screen.dart';
+import 'package:pocketwise/features/auth/providers/auth_provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';

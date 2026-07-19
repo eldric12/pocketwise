@@ -9,6 +9,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.textPrimary,
     required this.textSecondary,
     required this.border,
+    required this.dangerBackground,
+    required this.dangerText
   });
 
   final Color background;
@@ -17,6 +19,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color textPrimary;
   final Color textSecondary;
   final Color border;
+  final Color dangerBackground;
+  final Color dangerText;
 
   static const dark = AppThemeColors(
     background: Color(0xFF0F172A),
@@ -25,6 +29,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     textPrimary: Color(0xFFFFFFFF),
     textSecondary: Color(0xFF9FB0CC),
     border: Color(0xFF334155),
+    dangerBackground: Color(0xFF3A1F26),
+    dangerText: Color(0xFFFF7A7A),
   );
 
   static const light = AppThemeColors(
@@ -34,6 +40,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     textPrimary: Color(0xFF172033),
     textSecondary: Color(0xFF65738B),
     border: Color(0xFFDCE3EE),
+    dangerBackground: Color(0xFFFFEEEE),
+    dangerText: Color(0xFFE53935),
   );
 
   @override
@@ -44,6 +52,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? textPrimary,
     Color? textSecondary,
     Color? border,
+    Color? dangerBackground,
+    Color? dangerText
   }) {
     return AppThemeColors(
       background: background ?? this.background,
@@ -52,6 +62,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       border: border ?? this.border,
+      dangerBackground: dangerBackground ?? this.dangerBackground,
+      dangerText: dangerText ?? this.dangerText
     );
   }
 
@@ -65,6 +77,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       border: Color.lerp(border, other.border, t)!,
+      dangerBackground: Color.lerp(dangerBackground, other.dangerBackground, t)!,
+      dangerText: Color.lerp(dangerText, other.dangerText, t)!,
     );
   }
 }
