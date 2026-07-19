@@ -25,4 +25,5 @@ part 'dashboard_tabs/transaction_widgets.dart';
 part 'dashboard_tabs/budget_widgets.dart';
 part 'dashboard_tabs/setting_tab.dart';
 part 'dashboard_tabs/report_analytics.dart';
-part 'dashboard_tabs/spending_chart_data.dart';
+part 'dashboard_tabs/spending_chart_calculation.dart';
+part 'dashboard_tabs/quick_statistics.dart';

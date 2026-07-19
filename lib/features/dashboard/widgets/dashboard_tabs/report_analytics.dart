@@ -13,52 +13,65 @@ class ReportAnalytics extends StatefulWidget {
 }
 
 class _ReportAnalytics extends State<ReportAnalytics> {
-  _TrendFilter _filter = _TrendFilter.monthly;
+  TrendFilter _filter = TrendFilter.monthly;
 
-  void _setFilter(_TrendFilter filter) {
+  void _setFilter(TrendFilter filter) {
     setState(() => _filter = filter);
   }
 
   List<ChartLegendItem> get _trendItems {
     switch (_filter) {
-      case _TrendFilter.weekly:
+      case TrendFilter.weekly:
         return getWeeklyChartItems(widget.transactions, now);
-      case _TrendFilter.monthly:
+      case TrendFilter.monthly:
         return getDailyChartItems(widget.transactions, now);
-      case _TrendFilter.yearly:
+      case TrendFilter.yearly:
         return getYearlyChartItems(widget.transactions, now);
     }
   }
 
   List<ChartLegendItem> get _categoryItems {
     switch (_filter) {
-      case _TrendFilter.weekly:
+      case TrendFilter.weekly:
         return getWeeklyCategoryItems(widget.transactions, now);
 
-      case _TrendFilter.monthly:
+      case TrendFilter.monthly:
         return getMonthlyChartItems(widget.transactions, now);
 
-      case _TrendFilter.yearly:
+      case TrendFilter.yearly:
         return getYearlyCategoryItems(widget.transactions, now);
     }
   }
   
   IncomeExpenseItem get _incomeExpense {
     switch (_filter) {
-      case _TrendFilter.weekly:
+      case TrendFilter.weekly:
         return getWeeklyIncomeExpense(widget.transactions, now);
 
-      case _TrendFilter.monthly:
+      case TrendFilter.monthly:
         return getMonthlyIncomeExpense(widget.transactions, now);
 
-      case _TrendFilter.yearly:
+      case TrendFilter.yearly:
         return getYearlyIncomeExpense(widget.transactions, now);
     }
   }
 
+  QuickStatistics get _statistics {
+    switch (_filter) {
+      case TrendFilter.weekly:
+        return getWeeklyStatistics(widget.transactions, now);
+
+      case TrendFilter.monthly:
+        return getMonthlyStatistics(widget.transactions, now);
+
+      case TrendFilter.yearly:
+        return getYearlyStatistics(widget.transactions, now);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final stats = _statistics;
 
     return Scaffold(
       backgroundColor: context.themeColors.background,
@@ -93,24 +106,18 @@ class _ReportAnalytics extends State<ReportAnalytics> {
               children: [
                 FilterChipCard(
                   label: 'Weekly',
-                  selected: _filter == _TrendFilter.weekly,
-                  onTap: () => _setFilter(_TrendFilter.weekly),
+                  selected: _filter == TrendFilter.weekly,
+                  onTap: () => _setFilter(TrendFilter.weekly),
                 ),
                 FilterChipCard(
                   label: 'Monthly',
-                  selected: _filter == _TrendFilter.monthly,
-                  onTap: () => _setFilter(_TrendFilter.monthly),
+                  selected: _filter == TrendFilter.monthly,
+                  onTap: () => _setFilter(TrendFilter.monthly),
                 ),
                 FilterChipCard(
                   label: 'Yearly',
-                  selected: _filter == _TrendFilter.yearly,
-                  onTap: () => _setFilter(_TrendFilter.yearly),
-                ),
-                CircleIconButton(
-                  icon: Icons.calendar_month,
-                  onPressed: () {
-
-                  },
+                  selected: _filter == TrendFilter.yearly,
+                  onTap: () => _setFilter(TrendFilter.yearly),
                 )
               ],
             ),
@@ -154,7 +161,18 @@ class _ReportAnalytics extends State<ReportAnalytics> {
               ),
             ),
             const SizedBox(height: 12),
-            BarChartCard(data: _incomeExpense)
+            BarChartCard(data: _incomeExpense),
+            const SizedBox(height: 26),
+            Text(
+              'Quick Statistic',
+              style: GoogleFonts.inter(
+                color: context.themeColors.textPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            QuickStatisticsCard(stats: stats)
           ],
         ),
       )

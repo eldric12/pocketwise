@@ -229,9 +229,9 @@ class _OverviewCardState extends State<OverviewCard> {
   }
 }
 
-
-class LineChartCard extends StatefulWidget {
-  const LineChartCard({
+// Line Chart
+class LineChartCard extends StatelessWidget {
+    const LineChartCard({
     super.key,
     required this.items
   });
@@ -239,14 +239,8 @@ class LineChartCard extends StatefulWidget {
   final List<ChartLegendItem> items;
 
   @override
-  State<LineChartCard> createState() => _LineChartCardState();
-}
-
-class _LineChartCardState extends State<LineChartCard> {
-  @override
   Widget build(BuildContext context) {
     final colors = context.themeColors;
-    final items = widget.items;
 
     final spots = items
         .asMap()
@@ -354,23 +348,17 @@ class _LineChartCardState extends State<LineChartCard> {
 }
 
 // Bar Chart - Income vs Expense
-class BarChartCard extends StatefulWidget {
-  const BarChartCard({
-    super.key,
-    required this.data
+class BarChartCard extends StatelessWidget {
+    const BarChartCard({
+      super.key,
+      required this.data
   });
 
   final IncomeExpenseItem data;
 
   @override
-  State<BarChartCard> createState() => _BarChartCardState();
-}
-
-class _BarChartCardState extends State<BarChartCard> {
-  @override
   Widget build(BuildContext context) {
     final colors = context.themeColors;
-    final data = widget.data;
 
     final rawMax = data.income > data.expense
         ? data.income
@@ -413,7 +401,7 @@ class _BarChartCardState extends State<BarChartCard> {
                     BarChartRodData(
                       toY: data.income,
                       width: 50,
-                      color: Colors.green,
+                      color: AppColors.success,
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ],
@@ -425,7 +413,7 @@ class _BarChartCardState extends State<BarChartCard> {
                     BarChartRodData(
                       toY: data.expense,
                       width: 50,
-                      color: Colors.red,
+                      color: AppColors.danger,
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ],

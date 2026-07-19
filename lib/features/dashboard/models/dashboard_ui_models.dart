@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../models/transaction.dart';
 
 class BudgetViewData {
   const BudgetViewData({
@@ -48,4 +49,18 @@ class IncomeExpenseItem {
 
   final double income;
   final double expense;
+}
+
+class QuickStatistics {
+  const QuickStatistics({
+    this.highestExpense,
+    this.highestIncome,
+    required this.mostUsedCategory,
+    required this.averageDailySpending,
+  });
+
+  final Transaction? highestExpense;
+  final Transaction? highestIncome;
+  final String mostUsedCategory;
+  final double averageDailySpending;
 }
