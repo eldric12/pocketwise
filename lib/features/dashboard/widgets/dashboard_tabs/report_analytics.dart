@@ -31,22 +31,34 @@ class _ReportAnalytics extends State<ReportAnalytics> {
   }
 
   List<ChartLegendItem> get _categoryItems {
-  switch (_filter) {
-    case _TrendFilter.weekly:
-      return getWeeklyCategoryItems(widget.transactions, now);
+    switch (_filter) {
+      case _TrendFilter.weekly:
+        return getWeeklyCategoryItems(widget.transactions, now);
 
-    case _TrendFilter.monthly:
-      return getMonthlyChartItems(widget.transactions, now);
+      case _TrendFilter.monthly:
+        return getMonthlyChartItems(widget.transactions, now);
 
-    case _TrendFilter.yearly:
-      return getYearlyCategoryItems(widget.transactions, now);
+      case _TrendFilter.yearly:
+        return getYearlyCategoryItems(widget.transactions, now);
+    }
   }
-}
+  
+  IncomeExpenseItem get _incomeExpense {
+    switch (_filter) {
+      case _TrendFilter.weekly:
+        return getWeeklyIncomeExpense(widget.transactions, now);
+
+      case _TrendFilter.monthly:
+        return getMonthlyIncomeExpense(widget.transactions, now);
+
+      case _TrendFilter.yearly:
+        return getYearlyIncomeExpense(widget.transactions, now);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    final chartItems = _categoryItems;
-    final trendItems = _trendItems;
 
     return Scaffold(
       backgroundColor: context.themeColors.background,
@@ -112,14 +124,14 @@ class _ReportAnalytics extends State<ReportAnalytics> {
               ),
             ),
             const SizedBox(height: 12),
-            if (trendItems.every((e) => e.amount == 0))
+            if (_trendItems.every((e) => e.amount == 0))
               const EmptyStateCard(
                 title: 'No spending data',
                 subtitle: 'No expenses found for this period.',
               )
             else
               GlassPanel(
-                child: LineChartCard(items: trendItems)
+                child: LineChartCard(items: _trendItems)
               ),
             const SizedBox(height: 26),
             Text(
@@ -131,7 +143,7 @@ class _ReportAnalytics extends State<ReportAnalytics> {
               ),
             ),
             const SizedBox(height: 12),
-            OverviewCard(items: chartItems),
+            OverviewCard(items: _categoryItems),
             const SizedBox(height: 26),
             Text(
               'Income Vs Expense',
@@ -142,6 +154,7 @@ class _ReportAnalytics extends State<ReportAnalytics> {
               ),
             ),
             const SizedBox(height: 12),
+            BarChartCard(data: _incomeExpense)
           ],
         ),
       )

@@ -352,3 +352,143 @@ class _LineChartCardState extends State<LineChartCard> {
     );
   }
 }
+
+// Bar Chart - Income vs Expense
+class BarChartCard extends StatefulWidget {
+  const BarChartCard({
+    super.key,
+    required this.data
+  });
+
+  final IncomeExpenseItem data;
+
+  @override
+  State<BarChartCard> createState() => _BarChartCardState();
+}
+
+class _BarChartCardState extends State<BarChartCard> {
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.themeColors;
+    final data = widget.data;
+
+    final rawMax = data.income > data.expense
+        ? data.income
+        : data.expense;
+
+    final maxY = rawMax <= 0
+        ? 10.0
+        : (rawMax / 10).ceil() * 10.0 * 1.2;
+
+    final yInterval = maxY / 4;
+
+    return GlassPanel(
+      child: SizedBox(
+        height: 250,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 16, top: 12),
+          child: BarChart(
+            BarChartData(
+              minY: 0,
+              maxY: maxY,
+      
+              alignment: BarChartAlignment.spaceAround,
+      
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                horizontalInterval: yInterval,
+                getDrawingHorizontalLine: (value) => FlLine(
+                  color: colors.border,
+                  strokeWidth: 1,
+                ),
+              ),
+      
+              borderData: FlBorderData(show: false),
+      
+              barGroups: [
+                BarChartGroupData(
+                  x: 0,
+                  barRods: [
+                    BarChartRodData(
+                      toY: data.income,
+                      width: 50,
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ],
+                ),
+      
+                BarChartGroupData(
+                  x: 1,
+                  barRods: [
+                    BarChartRodData(
+                      toY: data.expense,
+                      width: 50,
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ],
+                ),
+              ],
+      
+              titlesData: FlTitlesData(
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+      
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+      
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 40,
+                    interval: yInterval,
+                    getTitlesWidget: (value, meta) => Text(
+                      value.toInt().toString(),
+                      style: GoogleFonts.inter(
+                        color: colors.textSecondary,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+      
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      String label = '';
+      
+                      switch (value.toInt()) {
+                        case 0:
+                          label = 'Income';
+                          break;
+                        case 1:
+                          label = 'Expense';
+                          break;
+                      }
+      
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          label,
+                          style: GoogleFonts.inter(
+                            color: colors.textSecondary,
+                            fontSize: 10,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

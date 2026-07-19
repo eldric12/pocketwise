@@ -39,3 +39,13 @@ class CategoryVisual {
   final Color background;
   final Color foreground;
 }
+
+class IncomeExpenseItem {
+  const IncomeExpenseItem({
+    required this.income,
+    required this.expense
+  });
+
+  final double income;
+  final double expense;
+}

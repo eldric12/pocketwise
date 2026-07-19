@@ -141,3 +141,76 @@ List<ChartLegendItem> getYearlyCategoryItems(List<Transaction> transactions, Dat
 
   return buildChartItems(spendingByCategory);
 }
+
+// Bar Chart
+IncomeExpenseItem getWeeklyIncomeExpense(
+    List<Transaction> transactions, DateTime now) {
+
+  final startOfWeek = DateTime(now.year, now.month, now.day)
+      .subtract(Duration(days: now.weekday - 1));
+
+  double income = 0;
+  double expense = 0;
+
+  for (final tx in transactions) {
+    final diff = tx.date.difference(startOfWeek).inDays;
+
+    if (diff >= 0 && diff < 7) {
+      if (tx.isExpense) {
+        expense += tx.amount;
+      } else {
+        income += tx.amount;
+      }
+    }
+  }
+
+  return IncomeExpenseItem(
+    income: income,
+    expense: expense,
+  );
+}
+
+IncomeExpenseItem getMonthlyIncomeExpense(
+    List<Transaction> transactions, DateTime now) {
+
+  double income = 0;
+  double expense = 0;
+
+  for (final tx in transactions) {
+    if (tx.date.year == now.year &&
+        tx.date.month == now.month) {
+      if (tx.isExpense) {
+        expense += tx.amount;
+      } else {
+        income += tx.amount;
+      }
+    }
+  }
+
+  return IncomeExpenseItem(
+    income: income,
+    expense: expense,
+  );
+}
+
+IncomeExpenseItem getYearlyIncomeExpense(
+    List<Transaction> transactions, DateTime now) {
+
+  double income = 0;
+  double expense = 0;
+
+  for (final tx in transactions) {
+    if (tx.date.year == now.year) {
+      if (tx.isExpense) {
+        expense += tx.amount;
+      } else {
+        income += tx.amount;
+      }
+    }
+  }
+
+  return IncomeExpenseItem(
+    income: income,
+    expense: expense,
+  );
+}
