@@ -145,7 +145,7 @@ class QuickStatisticsCard extends StatelessWidget {
           trailing: Text(
             '- RM${stats.averageDailySpending.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
-              color: Colors.yellow,
+              color: context.themeColors.warningText,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             )

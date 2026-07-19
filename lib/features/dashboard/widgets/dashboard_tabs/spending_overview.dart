@@ -370,6 +370,13 @@ class BarChartCard extends StatelessWidget {
 
     final yInterval = maxY / 4;
 
+    if (data.income == 0 && data.expense == 0) {
+      return const EmptyStateCard(
+        title: 'No income or expense data',
+        subtitle: 'No transactions found for this period.',
+      );
+    }
+    
     return GlassPanel(
       child: SizedBox(
         height: 250,
