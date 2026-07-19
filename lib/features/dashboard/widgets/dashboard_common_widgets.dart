@@ -40,10 +40,7 @@ class SectionHeader extends StatelessWidget {
           ),
           child: Text(
             actionLabel,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
+            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
           ),
         ),
       ],
@@ -72,9 +69,7 @@ class GlassPanel extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.themeColors.surface.withValues(alpha: 0.84),
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: context.themeColors.border,
-            ),
+            border: Border.all(color: context.themeColors.border),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x22000000),
@@ -95,11 +90,13 @@ class FilterChipCard extends StatelessWidget {
     super.key,
     required this.label,
     this.selected = false,
+    this.horizontalPadding = 16,
     this.onTap,
   });
 
   final String label;
   final bool selected;
+  final double horizontalPadding;
   final VoidCallback? onTap;
 
   @override
@@ -115,7 +112,10 @@ class FilterChipCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: 11,
+            ),
             decoration: BoxDecoration(
               color: selected
                   ? AppColors.primary
@@ -130,7 +130,9 @@ class FilterChipCard extends StatelessWidget {
             child: Text(
               label,
               style: GoogleFonts.inter(
-                color: selected ? Colors.white : context.themeColors.textSecondary,
+                color: selected
+                    ? Colors.white
+                    : context.themeColors.textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),
@@ -168,11 +170,7 @@ class MonthPill extends StatelessWidget {
 }
 
 class CircleIconButton extends StatelessWidget {
-  const CircleIconButton({
-    super.key,
-    required this.icon,
-    this.onPressed,
-  });
+  const CircleIconButton({super.key, required this.icon, this.onPressed});
 
   final IconData icon;
   final VoidCallback? onPressed;
@@ -181,20 +179,14 @@ class CircleIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: context.themeColors.surfaceSoft,
-      shape: const CircleBorder(
-        side: BorderSide(color: Color(0x1FFFFFFF)),
-      ),
+      shape: const CircleBorder(side: BorderSide(color: Color(0x1FFFFFFF))),
       child: InkWell(
         onTap: onPressed,
         customBorder: const CircleBorder(),
         child: SizedBox(
           width: 42,
           height: 42,
-          child: Icon(
-            icon,
-            color: context.themeColors.textPrimary,
-            size: 20,
-          ),
+          child: Icon(icon, color: context.themeColors.textPrimary, size: 20),
         ),
       ),
     );
@@ -274,7 +266,9 @@ class SegmentButton extends StatelessWidget {
           child: Text(
             label,
             style: GoogleFonts.inter(
-              color: selected ? Colors.white : context.themeColors.textSecondary,
+              color: selected
+                  ? Colors.white
+                  : context.themeColors.textSecondary,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
@@ -286,11 +280,7 @@ class SegmentButton extends StatelessWidget {
 }
 
 class LabeledField extends StatelessWidget {
-  const LabeledField({
-    super.key,
-    required this.label,
-    required this.child,
-  });
+  const LabeledField({super.key, required this.label, required this.child});
 
   final String label;
   final Widget child;
@@ -348,7 +338,9 @@ class ChoiceChipButton extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
           decoration: BoxDecoration(
-            color: selected ? AppColors.primary : context.themeColors.surfaceSoft,
+            color: selected
+                ? AppColors.primary
+                : context.themeColors.surfaceSoft,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: selected ? Colors.transparent : context.themeColors.border,
@@ -357,7 +349,9 @@ class ChoiceChipButton extends StatelessWidget {
           child: Text(
             label,
             style: GoogleFonts.inter(
-              color: selected ? Colors.white : context.themeColors.textSecondary,
+              color: selected
+                  ? Colors.white
+                  : context.themeColors.textSecondary,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
@@ -377,7 +371,7 @@ class MoreRow extends StatelessWidget {
     this.switchValue,
     this.onSwitchChanged,
     this.labelColor,
-    this.trailingText
+    this.trailingText,
   });
 
   final IconData? icon;
@@ -419,10 +413,7 @@ class MoreRow extends StatelessWidget {
                 ),
               ),
               if (hasSwitch)
-                Switch(
-                  value: switchValue!,
-                  onChanged: onSwitchChanged,
-                )
+                Switch(value: switchValue!, onChanged: onSwitchChanged)
               else if (trailingText != null)
                 Text(
                   trailingText!,
@@ -430,7 +421,7 @@ class MoreRow extends StatelessWidget {
                     color: context.themeColors.textSecondary,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                  )
+                  ),
                 )
               else
                 Icon(

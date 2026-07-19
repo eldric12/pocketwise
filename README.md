@@ -1,98 +1,121 @@
 # PocketWise Flutter App
 
-PocketWise is an offline-first personal finance application in active development. It is designed to help students and young adults record transactions quickly, understand monthly spending, and stay aware of category budgets.
+PocketWise is a student-focused personal finance application for recording income and expenses, understanding spending habits, and monitoring monthly category budgets. The app combines Firebase-backed accounts with a locally cached Flutter experience and a premium light/dark fintech interface.
 
-The product direction combines a premium fintech interface with a maintainable, feature-based Flutter architecture.
+## Current Features
 
-## Current Status
+### Accounts and Data
 
-### Implemented
+- Firebase email/password registration and sign-in
+- per-user Firestore transaction storage
+- user-aware dashboard greeting from the saved profile name
+- user-scoped SQLite transaction cache with local fallback on startup
+- locally persisted category budgets and custom category labels
 
-- premium dark navy dashboard and bottom navigation
-- dynamic monthly income, expense, and balance calculations
-- expense and income transaction entry
-- custom amount keypad
-- expense and income category selection
-- temporary custom category creation
-- transaction date, payment method, and memo fields
-- activity grouping and recent transaction summaries
-- dynamic spending breakdown by category
-- interactive donut chart with slice and legend selection
-- user-defined category budget limits
-- budget editing and removal
-- automatic near-limit and over-budget warnings
-- empty states for transactions, spending, and budgets
-- animated light and dark theme switching
-- modular dashboard and transaction UI files
+### Transactions
 
-### Not Implemented Yet
+- add income and expense transactions
+- record amount, category, date, payment method, and optional notes
+- custom amount keypad and type-aware visual styling
+- add persistent custom income or expense categories
+- edit existing transactions with prefilled values
+- delete transactions through a confirmation flow
+- view all transactions grouped by their actual calendar date
+- sort transactions newest-first or oldest-first
+- combine type, date-range, and category filters
+- filter by all dates, today, the past seven days, or this month
 
-- SQLite persistence for transactions, budgets, and categories
-- transaction editing from the activity screen
-- complete delete and undo user flow
-- permanent category management
-- reports and analytics screens
-- settings behavior and persisted theme preference
-- automated unit and widget test coverage
+### Dashboard and Budgets
 
-All transaction and budget data currently lives in Riverpod memory and resets when the application restarts.
+- all-time current balance calculated as total income minus total expenses
+- clearly separated current-month income and expense totals
+- current-month spending donut chart derived by category
+- interactive chart slices and legend rows
+- recent transaction preview with navigation to the full activity list
+- editable monthly category budget limits
+- dynamic progress bars and near-limit or overspending warnings
+- useful empty states when transaction, chart, or budget data is unavailable
+
+### Experience
+
+- premium dark navy visual system and accessible light theme
+- animated light/dark theme switching
+- responsive mobile layouts with safe-area-aware bottom navigation
+- modular dashboard and transaction screen components
+- semantic labels and minimum touch-target considerations
+
+## Data Persistence
+
+PocketWise currently uses a hybrid persistence model:
+
+| Data | Primary storage | Local behavior |
+| --- | --- | --- |
+| User accounts and profile names | Firebase Authentication and Firestore | Firebase-managed session data |
+| Transactions | Cloud Firestore | Cached in user-scoped SQLite and shown when remote loading fails |
+| Category budgets | SQLite | Persisted locally per signed-in user |
+| Custom category labels | SQLite | Persisted locally per signed-in user |
+
+Transaction creation, editing, and deletion currently write to Firebase before updating the local cache. Full offline write synchronization and conflict resolution are not implemented yet.
 
 ## Tech Stack
 
 - Flutter and Dart
 - `flutter_riverpod` for application state
+- Firebase Authentication and Cloud Firestore
+- `sqflite` and `path` for local persistence
 - `fl_chart` for spending visualizations
 - `google_fonts` for typography
-- `sqflite` and `path` declared for the planned persistence layer
-- Material 3 components and platform-safe interactions
+- Material 3 and custom theme extensions
 
 ## Project Structure
 
 ```text
 lib/
-├── main.dart
-├── app/
-│   └── app.dart
-├── core/
-│   ├── constants/
-│   │   └── app_colors.dart
-│   └── theme/
-│       └── app_theme_colors.dart
-└── features/
-    └── dashboard/
-        ├── models/
-        │   ├── dashboard_ui_models.dart
-        │   └── transaction.dart
-        ├── providers/
-        │   └── dashboard_provider.dart
-        ├── screens/
-        │   ├── dashboard_screen.dart
-        │   ├── new_transaction_screen.dart
-        │   └── new_transaction/
-        │       ├── amount_controls.dart
-        │       ├── category_controls.dart
-        │       └── detail_controls.dart
-        ├── utils/
-        │   └── dashboard_ui_helpers.dart
-        └── widgets/
-            ├── dashboard_common_widgets.dart
-            ├── dashboard_navigation.dart
-            ├── dashboard_tabs.dart
-            └── dashboard_tabs/
-                ├── activity_tab.dart
-                ├── budget_calculation.dart
-                ├── budget_widgets.dart
-                ├── budgets_tab.dart
-                ├── home_summary_widgets.dart
-                ├── home_tab.dart
-                ├── more_tab.dart
-                ├── spending_overview.dart
-                └── transaction_widgets.dart
+|-- main.dart
+|-- firebase_options.dart
+|-- app/
+|   `-- app.dart
+|-- core/
+|   |-- constants/
+|   `-- theme/
+`-- features/
+    |-- auth/
+    |   |-- providers/
+    |   |-- screens/
+    |   |-- services/
+    |   `-- widgets/
+    `-- dashboard/
+        |-- models/
+        |   |-- custom_category.dart
+        |   |-- dashboard_summary.dart
+        |   |-- dashboard_ui_models.dart
+        |   `-- transaction.dart
+        |-- providers/
+        |   `-- dashboard_provider.dart
+        |-- screens/
+        |   |-- dashboard_screen.dart
+        |   |-- new_transaction_screen.dart
+        |   `-- new_transaction/
+        |-- services/
+        |   `-- local_finance_service.dart
+        |-- utils/
+        `-- widgets/
+            |-- dashboard_tabs.dart
+            `-- dashboard_tabs/
 ```
 
-`dashboard_tabs.dart` and `new_transaction_screen.dart` are library entry points. Their focused internal components use Dart `part` files so private implementation details can remain scoped to their parent library.
+`dashboard_tabs.dart` and `new_transaction_screen.dart` are library entry points. Focused internal components use Dart `part` files so related private widgets remain scoped to their parent library without creating oversized files.
 
-## Running The App
+## Getting Started
+
+### Requirements
+
+- Flutter SDK compatible with Dart `^3.12.0`
+- Android Studio or VS Code with Flutter support
+- an emulator, simulator, or connected device
+- access to the team Firebase project, or a separate Firebase project configured with FlutterFire
+
+### Install and Run
 
 From `flutter_project/`:
 
@@ -108,65 +131,54 @@ flutter devices
 flutter run -d <device-id>
 ```
 
-## Code Quality
+If you use a different Firebase project, regenerate the platform configuration with FlutterFire before running the app.
+
+## Quality Checks
 
 ```bash
+dart format lib test
 flutter analyze
 flutter test
 ```
 
-Run formatting before committing:
-
-```bash
-dart format lib test
-```
+Focused coverage currently includes the dashboard summary calculation that separates all-time balance from current-month totals. Broader provider, persistence, and user-flow tests are still needed.
 
 ## Development Conventions
 
-- Keep financial values derived from state; do not hardcode sample totals, percentages, warnings, or dates.
-- Keep individual handwritten Dart files focused and preferably below 500 lines.
-- Place reusable feature widgets in the relevant component folder.
-- Keep calculations outside rendering code when they can be expressed as pure helpers.
-- Preserve the established color tokens in `app_colors.dart`.
-- Use clear empty, loading, validation, and error states.
-- Maintain minimum 48dp touch targets for interactive mobile controls.
-- Ensure new features work with both expense and income transactions where applicable.
-- Do not claim data is persistent until it is connected to the local database.
+- Derive totals, percentages, warnings, and chart values from application state; do not hardcode financial data.
+- Keep handwritten Dart files focused and preferably below 500 lines.
+- Put reusable feature widgets in the relevant component folder.
+- Keep financial calculations in pure helpers or models instead of embedding them in rendering code.
+- Use the shared theme tokens and verify changes in both light and dark modes.
+- Provide loading, empty, validation, and error states for new flows.
+- Keep interactive controls at least 48dp where practical.
+- Verify dashboard totals, charts, activity, budgets, Firebase data, and local cache behavior together after transaction changes.
 
 ## UI Direction
 
-PocketWise uses a restrained modern-finance visual language:
+PocketWise uses a restrained modern-finance visual language inspired by Revolut, Wise, Apple Wallet, and modern investment dashboards:
 
-- dark navy background
+- dark navy and cool white backgrounds
 - layered blue-gray surfaces
 - blue primary actions
 - semantic green, amber, and red financial states
-- strong white typography hierarchy
-- controlled corner radii and subtle borders
-- minimal gradients and decorative effects
-- clear spacing based on a 4dp/8dp rhythm
+- strong typography hierarchy with tabular financial figures
+- controlled corner radii, subtle borders, and minimal gradients
+- spacing based on a consistent 4dp/8dp rhythm
 
-Reference products include Revolut, Wise, Apple Wallet, and modern investment dashboards.
+## Known Gaps and Next Steps
 
-## Recommended Next Steps
-
-1. Add a repository and SQLite database layer.
-2. Persist transactions and restore them during provider initialization.
-3. Persist user-defined budgets and custom categories.
-4. Add transaction editing, deletion confirmation, and undo.
-5. Build reports from the same stored transaction source.
-6. Add unit tests for calculations and widget tests for critical flows.
+1. Add a dedicated read-only transaction detail screen.
+2. Add custom category editing, deletion, icon selection, and color selection.
+3. Build weekly/monthly reports and category analytics.
+4. Add CSV export and clear-all-data behavior.
+5. Persist the selected theme preference.
+6. Add transaction deletion undo.
+7. Add offline write synchronization and conflict handling.
+8. Expand unit, widget, provider, and persistence tests.
 
 ## Contributor Handoff
 
-Start with `dashboard_screen.dart` to understand navigation and provider wiring. Follow the library entry points into their component folders, and keep state changes inside `dashboard_provider.dart` until a dedicated repository layer is introduced.
+Start with `lib/features/dashboard/screens/dashboard_screen.dart` for navigation and provider wiring. Financial state is managed through `dashboard_provider.dart`, cloud transaction operations through `transaction_service.dart`, and device persistence through `local_finance_service.dart`.
 
-When changing financial behavior, verify these flows together:
-
-- dashboard totals
-- spending category breakdown
-- recent activity
-- budget progress
-- dashboard warning state
-
-These views intentionally derive from the same transaction and budget state and should remain consistent.
+When changing transaction behavior, verify the dashboard balance, monthly metrics, spending chart, recent activity, activity filters, budget progress, Firestore record, and SQLite cache remain consistent.

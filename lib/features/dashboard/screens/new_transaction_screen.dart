@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../models/custom_category.dart';
 import '../models/transaction.dart';
 import '../providers/dashboard_provider.dart';
 
@@ -13,22 +14,27 @@ part 'new_transaction/category_controls.dart';
 part 'new_transaction/detail_controls.dart';
 
 class NewTransactionScreen extends ConsumerStatefulWidget {
-  const NewTransactionScreen({super.key});
+  const NewTransactionScreen({super.key, this.initialTransaction});
+
+  final Transaction? initialTransaction;
 
   @override
   ConsumerState<NewTransactionScreen> createState() =>
       _NewTransactionScreenState();
 }
 
-class _NewTransactionScreenState
-    extends ConsumerState<NewTransactionScreen> {
-  final _noteController = TextEditingController();
+class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
+  late final TextEditingController _noteController;
   String _amountText = '0';
   bool _isExpense = true;
   String _category = 'Food';
   String _paymentMethod = 'Cash';
   DateTime _selectedDate = DateTime.now();
   bool _showAmountError = false;
+  bool _isSaving = false;
+  bool _isDeleting = false;
+  bool _allowPop = false;
+  bool _discardDialogOpen = false;
 
   final _expenseCategories = <_CategoryOption>[
     const _CategoryOption('Food', Icons.restaurant_rounded),
@@ -47,9 +53,50 @@ class _NewTransactionScreenState
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final transaction = widget.initialTransaction;
+    _noteController = TextEditingController(text: transaction?.note ?? '');
+    _noteController.addListener(_handleNoteChanged);
+    for (final category in ref.read(dashboardProvider).customCategories) {
+      final options = category.isExpense
+          ? _expenseCategories
+          : _incomeCategories;
+      if (!options.any(
+        (option) => option.label.toLowerCase() == category.label.toLowerCase(),
+      )) {
+        options.add(_CategoryOption(category.label, Icons.category_outlined));
+      }
+    }
+    if (transaction == null) return;
+
+    _amountText = transaction.amount.toStringAsFixed(2);
+    _isExpense = transaction.isExpense;
+    _category = transaction.categoryLabel;
+    _paymentMethod = transaction.paymentMethod;
+    _selectedDate = transaction.date;
+
+    final categories = transaction.isExpense
+        ? _expenseCategories
+        : _incomeCategories;
+    if (!categories.any(
+      (option) => option.label == transaction.categoryLabel,
+    )) {
+      categories.add(
+        _CategoryOption(transaction.categoryLabel, Icons.category_outlined),
+      );
+    }
+  }
+
+  @override
   void dispose() {
+    _noteController.removeListener(_handleNoteChanged);
     _noteController.dispose();
     super.dispose();
+  }
+
+  void _handleNoteChanged() {
+    if (_isEditing && mounted) setState(() {});
   }
 
   List<_CategoryOption> get _categories =>
@@ -67,61 +114,85 @@ class _NewTransactionScreenState
     return Color.lerp(_transactionAccent, Colors.black, 0.35)!;
   }
 
+  bool get _isEditing => widget.initialTransaction != null;
+  bool get _isBusy => _isSaving || _isDeleting;
+
+  bool get _hasUnsavedChanges {
+    final initial = widget.initialTransaction;
+    if (initial == null) return false;
+    return _amount != initial.amount ||
+        _isExpense != initial.isExpense ||
+        _category != initial.categoryLabel ||
+        _paymentMethod != initial.paymentMethod ||
+        _selectedDate != initial.date ||
+        _noteController.text.trim() != initial.note;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.themeColors.background,
-      body: SafeArea(
-        child: CustomScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          slivers: [
-            SliverToBoxAdapter(child: _buildHeader()),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 30, 16, 40),
-              sliver: SliverList.list(
-                children: [
-                  _TransactionTypeToggle(
-                    isExpense: _isExpense,
-                    onChanged: _changeTransactionType,
-                  ),
-                  const SizedBox(height: 30),
-                  _buildAmountPanel(),
-                  const SizedBox(height: 30),
-                  _SectionLabel(
-                    text: _isExpense ? 'SELECT CATEGORY' : 'INCOME SOURCE',
-                    accentColor: _transactionTextAccent(context),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildCategoryGrid(),
-                  const SizedBox(height: 30),
-                  _SectionLabel(
-                    text: 'ADDITIONAL DETAILS',
-                    accentColor: _transactionTextAccent(context),
-                  ),
-                  const SizedBox(height: 12),
-                  _DetailTile(
-                    icon: Icons.calendar_today_outlined,
-                    label: 'DATE',
-                    value: _formatDate(_selectedDate),
-                    trailing: Icons.calendar_month_outlined,
-                    onTap: _pickDate,
-                  ),
-                  const SizedBox(height: 12),
-                  _PaymentMethodDropdown(
-                    value: _paymentMethod,
-                    onChanged: (value) {
-                      HapticFeedback.selectionClick();
-                      setState(() => _paymentMethod = value);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _MemoField(controller: _noteController),
-                  const SizedBox(height: 34),
-                  _buildConfirmButton(),
-                ],
+    return PopScope<void>(
+      canPop: _allowPop || !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _requestClose();
+      },
+      child: Scaffold(
+        backgroundColor: context.themeColors.background,
+        body: SafeArea(
+          child: CustomScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader()),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 30, 16, 40),
+                sliver: SliverList.list(
+                  children: [
+                    _TransactionTypeToggle(
+                      isExpense: _isExpense,
+                      onChanged: _changeTransactionType,
+                    ),
+                    const SizedBox(height: 30),
+                    _buildAmountPanel(),
+                    const SizedBox(height: 30),
+                    _SectionLabel(
+                      text: _isExpense ? 'SELECT CATEGORY' : 'INCOME SOURCE',
+                      accentColor: _transactionTextAccent(context),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildCategoryGrid(),
+                    const SizedBox(height: 30),
+                    _SectionLabel(
+                      text: 'ADDITIONAL DETAILS',
+                      accentColor: _transactionTextAccent(context),
+                    ),
+                    const SizedBox(height: 12),
+                    _DetailTile(
+                      icon: Icons.calendar_today_outlined,
+                      label: 'DATE',
+                      value: _formatDate(_selectedDate),
+                      trailing: Icons.calendar_month_outlined,
+                      onTap: _pickDate,
+                    ),
+                    const SizedBox(height: 12),
+                    _PaymentMethodDropdown(
+                      value: _paymentMethod,
+                      onChanged: (value) {
+                        HapticFeedback.selectionClick();
+                        setState(() => _paymentMethod = value);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _MemoField(controller: _noteController),
+                    const SizedBox(height: 34),
+                    _buildConfirmButton(),
+                    if (_isEditing) ...[
+                      const SizedBox(height: 14),
+                      _buildDeleteButton(),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -131,9 +202,7 @@ class _NewTransactionScreenState
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 20, 20),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: context.themeColors.border),
-        ),
+        border: Border(bottom: BorderSide(color: context.themeColors.border)),
       ),
       child: Row(
         children: [
@@ -144,7 +213,7 @@ class _NewTransactionScreenState
               color: context.themeColors.surface,
               borderRadius: BorderRadius.circular(14),
               child: InkWell(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: _isBusy ? null : _requestClose,
                 borderRadius: BorderRadius.circular(14),
                 child: SizedBox(
                   width: 50,
@@ -160,7 +229,7 @@ class _NewTransactionScreenState
           ),
           const SizedBox(width: 24),
           Text(
-            'NEW TRANSACTION',
+            _isEditing ? 'EDIT TRANSACTION' : 'NEW TRANSACTION',
             style: GoogleFonts.inter(
               color: context.themeColors.textPrimary,
               fontSize: 18,
@@ -213,10 +282,8 @@ class _NewTransactionScreenState
                 const SizedBox(width: 28),
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 160),
-                  transitionBuilder: (child, animation) => FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  ),
+                  transitionBuilder: (child, animation) =>
+                      FadeTransition(opacity: animation, child: child),
                   child: Text(
                     _amount.toStringAsFixed(2),
                     key: ValueKey(_amountText),
@@ -262,7 +329,20 @@ class _NewTransactionScreenState
                   childAspectRatio: 1.8,
                 ),
                 itemBuilder: (context, index) {
-                  const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', 'backspace'];
+                  const keys = [
+                    '1',
+                    '2',
+                    '3',
+                    '4',
+                    '5',
+                    '6',
+                    '7',
+                    '8',
+                    '9',
+                    '0',
+                    '.',
+                    'backspace',
+                  ];
                   return _KeypadButton(
                     value: keys[index],
                     onPressed: () => _handleKeypadInput(keys[index]),
@@ -318,9 +398,21 @@ class _NewTransactionScreenState
     );
 
     if (name == null || !mounted) return;
+    final option = _CategoryOption(name, Icons.category_outlined);
+    try {
+      await ref
+          .read(dashboardProvider.notifier)
+          .addCustomCategory(
+            CustomCategory(label: name, isExpense: _isExpense),
+          );
+    } catch (_) {
+      if (!mounted) return;
+      _showError('Unable to save this category. Please try again.');
+      return;
+    }
+    if (!mounted) return;
     HapticFeedback.mediumImpact();
     setState(() {
-      final option = _CategoryOption(name, Icons.category_outlined);
       _categories.add(option);
       _category = name;
     });
@@ -331,10 +423,23 @@ class _NewTransactionScreenState
       width: double.infinity,
       height: 64,
       child: FilledButton.icon(
-        onPressed: _saveTransaction,
-        icon: const Icon(Icons.check_rounded, size: 22),
+        onPressed: _isBusy ? null : _saveTransaction,
+        icon: _isSaving
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  color: AppColors.background,
+                ),
+              )
+            : const Icon(Icons.check_rounded, size: 22),
         label: Text(
-          'Confirm transaction',
+          _isSaving
+              ? 'Saving...'
+              : _isEditing
+              ? 'Save changes'
+              : 'Confirm transaction',
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         style: FilledButton.styleFrom(
@@ -349,12 +454,46 @@ class _NewTransactionScreenState
     );
   }
 
+  Widget _buildDeleteButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: OutlinedButton.icon(
+        onPressed: _isBusy ? null : _confirmDelete,
+        icon: _isDeleting
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.danger,
+                ),
+              )
+            : const Icon(Icons.delete_outline_rounded, size: 21),
+        label: Text(_isDeleting ? 'Deleting...' : 'Delete transaction'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.danger,
+          side: BorderSide(color: AppColors.danger.withValues(alpha: 0.55)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _changeTransactionType(bool isExpense) {
     if (_isExpense == isExpense) return;
     HapticFeedback.selectionClick();
     setState(() {
       _isExpense = isExpense;
-      _category = isExpense ? _expenseCategories.first.label : _incomeCategories.first.label;
+      _category = isExpense
+          ? _expenseCategories.first.label
+          : _incomeCategories.first.label;
     });
   }
 
@@ -374,7 +513,9 @@ class _NewTransactionScreenState
       }
       final decimalIndex = _amountText.indexOf('.');
       if (decimalIndex != -1 && _amountText.length - decimalIndex > 2) return;
-      final wholeDigits = decimalIndex == -1 ? _amountText.length : decimalIndex;
+      final wholeDigits = decimalIndex == -1
+          ? _amountText.length
+          : decimalIndex;
       if (wholeDigits >= 7 && decimalIndex == -1) return;
       _amountText = _amountText == '0' ? value : '$_amountText$value';
     });
@@ -389,9 +530,9 @@ class _NewTransactionScreenState
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: AppColors.primary,
-                surface: context.themeColors.surface,
-              ),
+            primary: AppColors.primary,
+            surface: context.themeColors.surface,
+          ),
         ),
         child: child!,
       ),
@@ -400,11 +541,24 @@ class _NewTransactionScreenState
   }
 
   String _formatDate(DateTime date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
-  void _saveTransaction() {
+  Future<void> _saveTransaction() async {
     if (_amount <= 0) {
       HapticFeedback.mediumImpact();
       setState(() => _showAmountError = true);
@@ -412,12 +566,14 @@ class _NewTransactionScreenState
     }
 
     final note = _noteController.text.trim();
-    ref.read(dashboardProvider.notifier).addTransaction(
-          Transaction(
+    final title = note.isEmpty
+        ? (_isExpense ? '$_category expense' : '$_category income')
+        : note;
+    final initial = widget.initialTransaction;
+    final transaction = initial == null
+        ? Transaction(
             id: DateTime.now().microsecondsSinceEpoch.toString(),
-            title: note.isEmpty
-                ? (_isExpense ? '$_category expense' : '$_category income')
-                : note,
+            title: title,
             amount: _amount,
             date: _selectedDate,
             categoryId: _category.toLowerCase().replaceAll(' ', '_'),
@@ -425,9 +581,137 @@ class _NewTransactionScreenState
             paymentMethod: _paymentMethod,
             note: note,
             isExpense: _isExpense,
+          )
+        : initial.copyWith(
+            title: title,
+            amount: _amount,
+            date: _selectedDate,
+            categoryId: _category.toLowerCase().replaceAll(' ', '_'),
+            categoryLabel: _category,
+            paymentMethod: _paymentMethod,
+            note: note,
+            isExpense: _isExpense,
+          );
+
+    setState(() => _isSaving = true);
+    try {
+      final notifier = ref.read(dashboardProvider.notifier);
+      if (_isEditing) {
+        await notifier.updateTransaction(transaction);
+      } else {
+        await notifier.addTransaction(transaction);
+      }
+      if (!mounted) return;
+      HapticFeedback.mediumImpact();
+      setState(() {
+        _isSaving = false;
+        _allowPop = true;
+      });
+      await Future<void>.delayed(Duration.zero);
+      if (mounted) Navigator.of(context).pop(transaction);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      _showError('Unable to save this transaction. Please try again.');
+    }
+  }
+
+  Future<void> _requestClose() async {
+    if (_isBusy || _discardDialogOpen) return;
+    if (!_hasUnsavedChanges) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    _discardDialogOpen = true;
+    final shouldDiscard = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dialogContext.themeColors.surface,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Discard changes?'),
+        content: const Text(
+          'Your edits have not been saved. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Keep editing'),
           ),
-        );
-    HapticFeedback.mediumImpact();
-    Navigator.of(context).pop();
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              foregroundColor: AppColors.background,
+            ),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+    _discardDialogOpen = false;
+
+    if (shouldDiscard != true || !mounted) return;
+    setState(() => _allowPop = true);
+    await Future<void>.delayed(Duration.zero);
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _confirmDelete() async {
+    final transaction = widget.initialTransaction;
+    if (transaction == null) return;
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dialogContext.themeColors.surface,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Delete transaction?'),
+        content: Text(
+          '"${transaction.title}" will be permanently removed from your records.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            icon: const Icon(Icons.delete_outline_rounded, size: 19),
+            label: const Text('Delete'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              foregroundColor: AppColors.background,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true || !mounted) return;
+    setState(() => _isDeleting = true);
+    try {
+      await ref
+          .read(dashboardProvider.notifier)
+          .deleteTransaction(transaction.id);
+      if (!mounted) return;
+      HapticFeedback.mediumImpact();
+      setState(() {
+        _isDeleting = false;
+        _allowPop = true;
+      });
+      await Future<void>.delayed(Duration.zero);
+      if (mounted) Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isDeleting = false);
+      _showError('Unable to delete this transaction. Please try again.');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }

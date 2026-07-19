@@ -19,6 +19,7 @@ class AuthService {
         email: email.trim().toLowerCase(),
         password: password,
       );
+      await credential.user!.updateDisplayName(name.trim());
       await _firestore.collection('users').doc(credential.user!.uid).set({
         'name': name.trim(),
         'email': email.trim().toLowerCase(),

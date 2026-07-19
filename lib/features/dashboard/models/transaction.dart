@@ -21,6 +21,29 @@ class Transaction {
     required this.isExpense,
   });
 
+  Transaction copyWith({
+    String? title,
+    double? amount,
+    DateTime? date,
+    String? categoryId,
+    String? categoryLabel,
+    String? paymentMethod,
+    String? note,
+    bool? isExpense,
+  }) {
+    return Transaction(
+      id: id,
+      title: title ?? this.title,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      categoryId: categoryId ?? this.categoryId,
+      categoryLabel: categoryLabel ?? this.categoryLabel,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      note: note ?? this.note,
+      isExpense: isExpense ?? this.isExpense,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -39,10 +62,11 @@ class Transaction {
     return Transaction(
       id: map['id'] as String,
       title: map['title'] as String,
-      amount: map['amount'] as double,
+      amount: (map['amount'] as num).toDouble(),
       date: DateTime.parse(map['date'] as String),
       categoryId: map['categoryId'] as String,
-      categoryLabel: map['categoryLabel'] as String? ?? map['categoryId'] as String,
+      categoryLabel:
+          map['categoryLabel'] as String? ?? map['categoryId'] as String,
       paymentMethod: map['paymentMethod'] as String? ?? 'Cash',
       note: map['note'] as String? ?? '',
       isExpense: (map['isExpense'] as int) == 1,

@@ -9,7 +9,8 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('This month'), findsOneWidget);
-    expect(find.text('Your money at a glance'), findsOneWidget);
+    expect(find.text('Your financial overview'), findsOneWidget);
+    expect(find.text('Total Spending'), findsOneWidget);
+    expect(find.text('ALL TIME'), findsOneWidget);
   });
 }

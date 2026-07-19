@@ -78,6 +78,9 @@ String formatAmount(
   required bool signed,
   bool positive = true,
 }) {
+  if (!signed && amount < 0) {
+    return '-RM ${amount.abs().toStringAsFixed(2)}';
+  }
   final prefix = signed ? (positive ? '+' : '-') : '';
-  return '${prefix}RM ${amount.toStringAsFixed(2)}';
+  return '${prefix}RM ${amount.abs().toStringAsFixed(2)}';
 }
