@@ -62,7 +62,7 @@ class QuickStatisticsCard extends StatelessWidget {
             child: const Icon(Icons.wallet_outlined)
           ), 
           title: Text(
-            stats.highestIncome?.categoryLabel ?? 'No income',
+            'Highest Income',
             style: GoogleFonts.inter(
               color: context.themeColors.textPrimary,
               fontSize: 14,
@@ -70,7 +70,7 @@ class QuickStatisticsCard extends StatelessWidget {
             )
           ),
           subtitle: Text(
-            'Freelance Income',
+            stats.highestIncome?.categoryLabel ?? 'No income',
             style: GoogleFonts.inter(
               color: context.themeColors.textSecondary,
               fontSize: 12,
@@ -110,13 +110,14 @@ class QuickStatisticsCard extends StatelessWidget {
             )
           ),
           subtitle: Text(
-            stats.mostUsedCategory,
+            stats.mostUsedCategory ?? '',
             style: GoogleFonts.inter(
               color: context.themeColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w400,
             )
           ),
+          trailing: Text(stats.mostUsedCategory ?? '-'),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ), 
@@ -143,7 +144,7 @@ class QuickStatisticsCard extends StatelessWidget {
           ),
           subtitle: const Text(''),
           trailing: Text(
-            '- RM${stats.averageDailySpending.toStringAsFixed(2)}',
+            stats.averageDailySpending == 0 ? '-' : '- RM${stats.averageDailySpending.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: context.themeColors.warningText,
               fontSize: 12,

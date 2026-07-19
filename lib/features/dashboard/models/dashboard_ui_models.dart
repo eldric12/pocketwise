@@ -55,12 +55,12 @@ class QuickStatistics {
   const QuickStatistics({
     this.highestExpense,
     this.highestIncome,
-    required this.mostUsedCategory,
+    this.mostUsedCategory,
     required this.averageDailySpending,
   });
 
   final Transaction? highestExpense;
   final Transaction? highestIncome;
-  final String mostUsedCategory;
+  final String? mostUsedCategory;
   final double averageDailySpending;
 }
