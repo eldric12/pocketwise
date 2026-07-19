@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
 import '../widgets/auth_header_wave.dart';
 import 'signup_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key, required this.onToggleTheme});
@@ -97,7 +98,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: colors.background,
       body: Column(
         children: [
-          const AuthHeaderWave(), // no back button — reached only via the splash timer
+          const AuthHeaderWave(centerBrand: true), // no back button — reached only via the splash timer
           Expanded(
             child: SafeArea(
               top: false,
@@ -168,7 +169,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          // TODO: wire up forgot password flow if required by assignment
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const ForgotPasswordScreen(),
+                            ),
+                          );
                         },
                         style: TextButton.styleFrom(padding: EdgeInsets.zero),
                         child: Text(

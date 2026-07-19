@@ -74,6 +74,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           budgetLimits: budgetLimits,
           userName: userName,
           onTransactionTap: _openEditTransaction,
+          onOpenReports: () => _openReports(transactions),
           onSeeAll: _showActivity,
           onToggleTheme: widget.onToggleTheme,
         );
@@ -92,11 +93,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       case 3:
         return MoreTab(
           onToggleTheme: widget.onToggleTheme,
-          onOpenReports: () {
-            setState(() {
-              _currentIndex = 0;
-            });
-          },
+          onOpenReports: () => _openReports(transactions),
         );
       default:
         return HomeTab(
@@ -104,10 +101,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           budgetLimits: budgetLimits,
           userName: userName,
           onTransactionTap: _openEditTransaction,
+          onOpenReports: () => _openReports(transactions),
           onSeeAll: _showActivity,
           onToggleTheme: widget.onToggleTheme,
         );
     }
+  }
+
+  void _openReports(List<Transaction> transactions) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ReportAnalytics(transactions: transactions),
+      ),
+    );
   }
 
   void _showActivity() {

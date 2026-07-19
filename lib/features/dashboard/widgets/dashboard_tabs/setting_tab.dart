@@ -1,17 +1,33 @@
 part of '../dashboard_tabs.dart';
 
-class SettingTab extends StatefulWidget {
+class SettingTab extends ConsumerStatefulWidget {
   const SettingTab({
     super.key, required this.onToggleTheme
 });
 
   @override
-  State<SettingTab> createState() => _SettingTabState();
+  ConsumerState<SettingTab> createState() => _SettingTabState();
   final VoidCallback onToggleTheme;
 }
 
-class _SettingTabState extends State<SettingTab> {
+class _SettingTabState extends ConsumerState<SettingTab> {
   bool _offlineStorage = true;
+
+  Future<void> _onLogout() async {
+    await AuthService.instance.logout();
+    ref.read(currentUserIdProvider.notifier).state = null;
+
+    if (!mounted) return;
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => LoginScreen(
+          onToggleTheme: widget.onToggleTheme,
+        ),
+      ),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,6 +178,49 @@ class _SettingTabState extends State<SettingTab> {
                   )
               ],
             ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context, 
+                    builder: ((context) {
+                      return AlertDialog(
+                        title: const Text('Confirm Logout'),
+                        content: const Text('Are you sure you want to logout?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            }, 
+                            child: const Text('Cancel')
+                          ),
+                          TextButton(
+                            onPressed:() async {
+                              Navigator.pop(context);
+                              await _onLogout();
+                            },
+                            child: const Text('Logout')
+                          )
+                        ],
+                      );
+                    })
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.themeColors.dangerBackground
+                ),
+                child: Text(
+                  'Logout',
+                    style: GoogleFonts.inter(
+                    color: context.themeColors.dangerText,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400
+                  )
+                )
+              ),
+            )
           ],
         ),
       ),

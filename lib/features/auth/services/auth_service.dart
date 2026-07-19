@@ -64,6 +64,23 @@ class AuthService {
     }
   }
 
+  Future<String?> sendPasswordReset({required String email}) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    try {
+      await _auth.sendPasswordResetEmail(email: normalizedEmail);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          return null; // don't leak account existence
+        case 'invalid-email':
+          return 'Please enter a valid email.';
+        default:
+          return 'Something went wrong. Please try again.';
+      }
+    }
+  }
+
   String? get currentUserId => _auth.currentUser?.uid;
 
   Future<void> logout() async {

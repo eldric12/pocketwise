@@ -7,6 +7,7 @@ class HomeTab extends StatelessWidget {
     required this.budgetLimits,
     required this.userName,
     required this.onTransactionTap,
+    required this.onOpenReports,
     required this.onSeeAll,
     required this.onToggleTheme,
   });
@@ -15,6 +16,7 @@ class HomeTab extends StatelessWidget {
   final Map<String, double> budgetLimits;
   final String? userName;
   final ValueChanged<Transaction> onTransactionTap;
+  final VoidCallback onOpenReports;
   final VoidCallback onSeeAll;
   final VoidCallback onToggleTheme;
 
@@ -72,7 +74,7 @@ class HomeTab extends StatelessWidget {
               SectionHeader(
                 title: 'Spending this month',
                 actionLabel: 'Reports',
-                onAction: () {},
+                onAction: onOpenReports,
               ),
               const SizedBox(height: 12),
               OverviewCard(items: chartItems),

@@ -229,3 +229,261 @@ class _OverviewCardState extends State<OverviewCard> {
   }
 }
 
+// Line Chart
+class LineChartCard extends StatelessWidget {
+    const LineChartCard({
+    super.key,
+    required this.items
+  });
+
+  final List<ChartLegendItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
+    final spots = items
+        .asMap()
+        .entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value.amount))
+        .toList();
+
+    final rawMax = items.isEmpty
+        ? 10.0
+        : items.map((e) => e.amount).reduce((a, b) => a > b ? a : b);
+
+    // round up to nearest 10 (or 20/50/100 depending on scale) for clean ticks
+    final maxY = rawMax <= 0 ? 10.0 : (rawMax / 10).ceil() * 10.0 * 1.2;
+    final yInterval = maxY / 4;
+
+    // Avoid overcrowded labels when there are many points (e.g. 31 days)
+    final labelInterval = items.length > 12
+        ? (items.length / 6).ceil().toDouble()
+        : 1.0;
+
+    return SizedBox(
+      height: 250,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16, top: 12),
+        child: LineChart(
+          LineChartData(
+            minX: 0,
+            maxX: spots.isEmpty ? 0 : (spots.length - 1).toDouble(),
+            minY: 0,
+            maxY: maxY,
+            clipData: const FlClipData.all(),
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              horizontalInterval: yInterval,
+              getDrawingHorizontalLine: (value) => FlLine(
+                color: colors.border,
+                strokeWidth: 1,
+              ),
+            ),
+            borderData: FlBorderData(show: false),
+            lineBarsData: [
+              LineChartBarData(
+                spots: spots,
+                isCurved: true,
+                preventCurveOverShooting: true,
+                color: AppColors.primary,
+                barWidth: 3,
+                dotData: const FlDotData(show: true),
+                belowBarData: BarAreaData(
+                  show: true,
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                ),
+              ),
+            ],
+            titlesData: FlTitlesData(
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: labelInterval,
+                  getTitlesWidget: (value, meta) {
+                    final index = value.toInt();
+                    if (index < 0 || index >= items.length) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        items[index].label,
+                        style: GoogleFonts.inter(
+                          color: colors.textSecondary,
+                          fontSize: 10,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 40,
+                  interval: yInterval,
+                  getTitlesWidget: (value, meta) => Text(
+                    value.toInt().toString(),
+                    style: GoogleFonts.inter(
+                      color: colors.textSecondary,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Bar Chart - Income vs Expense
+class BarChartCard extends StatelessWidget {
+    const BarChartCard({
+      super.key,
+      required this.data
+  });
+
+  final IncomeExpenseItem data;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
+    final rawMax = data.income > data.expense
+        ? data.income
+        : data.expense;
+
+    final maxY = rawMax <= 0
+        ? 10.0
+        : (rawMax / 10).ceil() * 10.0 * 1.2;
+
+    final yInterval = maxY / 4;
+
+    if (data.income == 0 && data.expense == 0) {
+      return const EmptyStateCard(
+        title: 'No income or expense data',
+        subtitle: 'No transactions found for this period.',
+      );
+    }
+    
+    return GlassPanel(
+      child: SizedBox(
+        height: 250,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 16, top: 12),
+          child: BarChart(
+            BarChartData(
+              minY: 0,
+              maxY: maxY,
+      
+              alignment: BarChartAlignment.spaceAround,
+      
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                horizontalInterval: yInterval,
+                getDrawingHorizontalLine: (value) => FlLine(
+                  color: colors.border,
+                  strokeWidth: 1,
+                ),
+              ),
+      
+              borderData: FlBorderData(show: false),
+      
+              barGroups: [
+                BarChartGroupData(
+                  x: 0,
+                  barRods: [
+                    BarChartRodData(
+                      toY: data.income,
+                      width: 50,
+                      color: AppColors.success,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ],
+                ),
+      
+                BarChartGroupData(
+                  x: 1,
+                  barRods: [
+                    BarChartRodData(
+                      toY: data.expense,
+                      width: 50,
+                      color: AppColors.danger,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ],
+                ),
+              ],
+      
+              titlesData: FlTitlesData(
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+      
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+      
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 40,
+                    interval: yInterval,
+                    getTitlesWidget: (value, meta) => Text(
+                      value.toInt().toString(),
+                      style: GoogleFonts.inter(
+                        color: colors.textSecondary,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+      
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      String label = '';
+      
+                      switch (value.toInt()) {
+                        case 0:
+                          label = 'Income';
+                          break;
+                        case 1:
+                          label = 'Expense';
+                          break;
+                      }
+      
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          label,
+                          style: GoogleFonts.inter(
+                            color: colors.textSecondary,
+                            fontSize: 10,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
