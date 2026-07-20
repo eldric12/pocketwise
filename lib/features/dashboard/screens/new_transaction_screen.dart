@@ -5,9 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
-import '../models/custom_category.dart';
+import '../models/category_definition.dart';
 import '../models/transaction.dart';
 import '../providers/dashboard_provider.dart';
+import '../utils/category_catalog.dart';
+import '../widgets/category_editor_sheet.dart';
 
 part 'new_transaction/amount_controls.dart';
 part 'new_transaction/category_controls.dart';
@@ -27,7 +29,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
   late final TextEditingController _noteController;
   String _amountText = '0';
   bool _isExpense = true;
-  String _category = 'Food';
+  String _categoryId = 'food';
   String _paymentMethod = 'Cash';
   DateTime _selectedDate = DateTime.now();
   bool _showAmountError = false;
@@ -36,21 +38,8 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
   bool _allowPop = false;
   bool _discardDialogOpen = false;
 
-  final _expenseCategories = <_CategoryOption>[
-    const _CategoryOption('Food', Icons.restaurant_rounded),
-    const _CategoryOption('Transport', Icons.directions_car_filled_rounded),
-    const _CategoryOption('Bills', Icons.receipt_long_rounded),
-    const _CategoryOption('Entertainment', Icons.movie_outlined),
-    const _CategoryOption('Shopping', Icons.shopping_bag_outlined),
-    const _CategoryOption('Books', Icons.menu_book_rounded),
-  ];
-
-  final _incomeCategories = <_CategoryOption>[
-    const _CategoryOption('Salary', Icons.account_balance_wallet_rounded),
-    const _CategoryOption('Freelance', Icons.work_outline_rounded),
-    const _CategoryOption('Gift', Icons.card_giftcard_rounded),
-    const _CategoryOption('Refund', Icons.replay_rounded),
-  ];
+  late final List<CategoryDefinition> _expenseCategories;
+  late final List<CategoryDefinition> _incomeCategories;
 
   @override
   void initState() {
@@ -58,33 +47,46 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     final transaction = widget.initialTransaction;
     _noteController = TextEditingController(text: transaction?.note ?? '');
     _noteController.addListener(_handleNoteChanged);
-    for (final category in ref.read(dashboardProvider).customCategories) {
-      final options = category.isExpense
-          ? _expenseCategories
-          : _incomeCategories;
-      if (!options.any(
-        (option) => option.label.toLowerCase() == category.label.toLowerCase(),
-      )) {
-        options.add(_CategoryOption(category.label, Icons.category_outlined));
-      }
-    }
+    final storedCategories = ref.read(dashboardProvider).categories;
+    final availableCategories = storedCategories.isEmpty
+        ? defaultCategories
+        : storedCategories;
+    _expenseCategories = availableCategories
+        .where((category) => category.isExpense)
+        .toList();
+    _incomeCategories = availableCategories
+        .where((category) => !category.isExpense)
+        .toList();
     if (transaction == null) return;
 
     _amountText = transaction.amount.toStringAsFixed(2);
     _isExpense = transaction.isExpense;
-    _category = transaction.categoryLabel;
+    _categoryId = transaction.categoryId;
     _paymentMethod = transaction.paymentMethod;
     _selectedDate = transaction.date;
 
     final categories = transaction.isExpense
         ? _expenseCategories
         : _incomeCategories;
-    if (!categories.any(
-      (option) => option.label == transaction.categoryLabel,
-    )) {
+    final existingCategory = findCategory(
+      categories,
+      id: transaction.categoryId,
+      label: transaction.categoryLabel,
+      isExpense: transaction.isExpense,
+    );
+    if (existingCategory == null) {
       categories.add(
-        _CategoryOption(transaction.categoryLabel, Icons.category_outlined),
+        CategoryDefinition(
+          id: transaction.categoryId,
+          label: transaction.categoryLabel,
+          isExpense: transaction.isExpense,
+          iconKey: 'category',
+          colorKey: 'slate',
+          isCustom: true,
+        ),
       );
+    } else {
+      _categoryId = existingCategory.id;
     }
   }
 
@@ -99,8 +101,13 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     if (_isEditing && mounted) setState(() {});
   }
 
-  List<_CategoryOption> get _categories =>
+  List<CategoryDefinition> get _categories =>
       _isExpense ? _expenseCategories : _incomeCategories;
+
+  CategoryDefinition get _selectedCategory => _categories.firstWhere(
+    (category) => category.id == _categoryId,
+    orElse: () => _categories.first,
+  );
 
   double get _amount => double.tryParse(_amountText) ?? 0;
 
@@ -122,7 +129,7 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     if (initial == null) return false;
     return _amount != initial.amount ||
         _isExpense != initial.isExpense ||
-        _category != initial.categoryLabel ||
+        _categoryId != initial.categoryId ||
         _paymentMethod != initial.paymentMethod ||
         _selectedDate != initial.date ||
         _noteController.text.trim() != initial.note;
@@ -377,11 +384,11 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
         final option = _categories[index];
         return _CategoryCard(
           option: option,
-          selected: _category == option.label,
+          selected: _categoryId == option.id,
           accentColor: _transactionAccent,
           onTap: () {
             HapticFeedback.selectionClick();
-            setState(() => _category = option.label);
+            setState(() => _categoryId = option.id);
           },
         );
       },
@@ -389,22 +396,15 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
   }
 
   Future<void> _addCategory() async {
-    final name = await showDialog<String>(
+    final category = await showCategoryEditorSheet(
       context: context,
-      builder: (context) => _AddCategoryDialog(
-        existingNames: _categories.map((category) => category.label).toSet(),
-        accentColor: _transactionAccent,
-      ),
+      isExpense: _isExpense,
+      existingNames: _categories.map((category) => category.label).toSet(),
     );
 
-    if (name == null || !mounted) return;
-    final option = _CategoryOption(name, Icons.category_outlined);
+    if (category == null || !mounted) return;
     try {
-      await ref
-          .read(dashboardProvider.notifier)
-          .addCustomCategory(
-            CustomCategory(label: name, isExpense: _isExpense),
-          );
+      await ref.read(dashboardProvider.notifier).addCategory(category);
     } catch (_) {
       if (!mounted) return;
       _showError('Unable to save this category. Please try again.');
@@ -413,8 +413,8 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     if (!mounted) return;
     HapticFeedback.mediumImpact();
     setState(() {
-      _categories.add(option);
-      _category = name;
+      _categories.add(category);
+      _categoryId = category.id;
     });
   }
 
@@ -491,9 +491,9 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     HapticFeedback.selectionClick();
     setState(() {
       _isExpense = isExpense;
-      _category = isExpense
-          ? _expenseCategories.first.label
-          : _incomeCategories.first.label;
+      _categoryId = isExpense
+          ? _expenseCategories.first.id
+          : _incomeCategories.first.id;
     });
   }
 
@@ -566,8 +566,11 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
     }
 
     final note = _noteController.text.trim();
+    final selectedCategory = _selectedCategory;
     final title = note.isEmpty
-        ? (_isExpense ? '$_category expense' : '$_category income')
+        ? (_isExpense
+              ? '${selectedCategory.label} expense'
+              : '${selectedCategory.label} income')
         : note;
     final initial = widget.initialTransaction;
     final transaction = initial == null
@@ -576,8 +579,8 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
             title: title,
             amount: _amount,
             date: _selectedDate,
-            categoryId: _category.toLowerCase().replaceAll(' ', '_'),
-            categoryLabel: _category,
+            categoryId: selectedCategory.id,
+            categoryLabel: selectedCategory.label,
             paymentMethod: _paymentMethod,
             note: note,
             isExpense: _isExpense,
@@ -586,8 +589,8 @@ class _NewTransactionScreenState extends ConsumerState<NewTransactionScreen> {
             title: title,
             amount: _amount,
             date: _selectedDate,
-            categoryId: _category.toLowerCase().replaceAll(' ', '_'),
-            categoryLabel: _category,
+            categoryId: selectedCategory.id,
+            categoryLabel: selectedCategory.label,
             paymentMethod: _paymentMethod,
             note: note,
             isExpense: _isExpense,

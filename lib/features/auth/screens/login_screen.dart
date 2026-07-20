@@ -70,7 +70,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => DashboardScreen(onToggleTheme: widget.onToggleTheme),
+          builder: (context) =>
+              DashboardScreen(onToggleTheme: widget.onToggleTheme),
         ),
       );
     } catch (e) {
@@ -98,7 +99,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: colors.background,
       body: Column(
         children: [
-          const AuthHeaderWave(centerBrand: true), // no back button — reached only via the splash timer
+          const AuthHeaderWave(
+            centerBrand: true,
+          ), // no back button — reached only via the splash timer
           Expanded(
             child: SafeArea(
               top: false,
@@ -145,24 +148,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       style: GoogleFonts.inter(color: colors.textPrimary),
-                      decoration: _fieldDecoration(
-                        colors,
-                        hint: 'Enter your password',
-                        icon: Icons.lock_outline_rounded,
-                      ).copyWith(
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: colors.textSecondary,
-                            size: 20,
+                      decoration:
+                          _fieldDecoration(
+                            colors,
+                            hint: 'Enter your password',
+                            icon: Icons.lock_outline_rounded,
+                          ).copyWith(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: colors.textSecondary,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                );
+                              },
+                            ),
                           ),
-                          onPressed: () {
-                            setState(() => _obscurePassword = !_obscurePassword);
-                          },
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 12),
                     Align(
@@ -171,7 +177,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => const ForgotPasswordScreen(),
+                              builder: (context) =>
+                                  const ForgotPasswordScreen(),
                             ),
                           );
                         },
@@ -190,7 +197,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(height: 8),
                       Text(
                         _errorText!,
-                        style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13),
+                        style: GoogleFonts.inter(
+                          color: Colors.redAccent,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                     const SizedBox(height: 16),
@@ -229,7 +239,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       children: [
                         Text(
                           "Don't have an Account? ",
-                          style: GoogleFonts.inter(color: colors.textSecondary, fontSize: 13),
+                          style: GoogleFonts.inter(
+                            color: colors.textSecondary,
+                            fontSize: 13,
+                          ),
                         ),
                         GestureDetector(
                           onTap: _goToSignup,

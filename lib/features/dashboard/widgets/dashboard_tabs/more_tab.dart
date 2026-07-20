@@ -5,7 +5,7 @@ class MoreTab extends StatelessWidget {
     super.key,
     // required this.transactions,
     required this.onOpenReports,
-    required this.onToggleTheme
+    required this.onToggleTheme,
   });
 
   // final List<Transaction> transactions;
@@ -41,7 +41,14 @@ class MoreTab extends StatelessWidget {
                 MoreRow(
                   icon: Icons.grid_view_rounded,
                   label: 'Manage categories',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ManageCategoriesScreen(),
+                      ),
+                    );
+                  },
                 ),
                 const PanelDivider(),
                 MoreRow(
@@ -49,10 +56,11 @@ class MoreTab extends StatelessWidget {
                   label: 'Settings',
                   onTap: () {
                     Navigator.push(
-                      context, 
+                      context,
                       MaterialPageRoute(
-                        builder: (context) => SettingTab(onToggleTheme: onToggleTheme)
-                      )
+                        builder: (context) =>
+                            SettingTab(onToggleTheme: onToggleTheme),
+                      ),
                     );
                   },
                 ),
@@ -64,6 +72,3 @@ class MoreTab extends StatelessWidget {
     );
   }
 }
-
-
-

@@ -42,10 +42,7 @@ class CategoryVisual {
 }
 
 class IncomeExpenseItem {
-  const IncomeExpenseItem({
-    required this.income,
-    required this.expense
-  });
+  const IncomeExpenseItem({required this.income, required this.expense});
 
   final double income;
   final double expense;

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../models/category_definition.dart';
 import '../models/transaction.dart';
 import '../providers/dashboard_provider.dart';
 import '../screens/new_transaction_screen.dart';
@@ -45,6 +46,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             child: _buildCurrentScreen(
               transactions,
               dashboardState.budgetLimits,
+              dashboardState.categories,
               userName,
             ),
           ),
@@ -65,27 +67,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget _buildCurrentScreen(
     List<Transaction> transactions,
     Map<String, double> budgetLimits,
+    List<CategoryDefinition> categories,
     String? userName,
   ) {
     switch (_currentIndex) {
       case 0:
         return HomeTab(
           transactions: transactions,
+          categories: categories,
           budgetLimits: budgetLimits,
           userName: userName,
           onTransactionTap: _openEditTransaction,
-          onOpenReports: () => _openReports(transactions),
+          onOpenReports: () => _openReports(transactions, categories),
           onSeeAll: _showActivity,
           onToggleTheme: widget.onToggleTheme,
         );
       case 1:
         return ActivityTab(
           transactions: transactions,
+          categories: categories,
           onTransactionTap: _openEditTransaction,
         );
       case 2:
         return BudgetsTab(
           transactions: transactions,
+          categories: categories,
           budgetLimits: budgetLimits,
           onSetBudget: _setBudget,
           onRemoveBudget: _removeBudget,
@@ -93,25 +99,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       case 3:
         return MoreTab(
           onToggleTheme: widget.onToggleTheme,
-          onOpenReports: () => _openReports(transactions),
+          onOpenReports: () => _openReports(transactions, categories),
         );
       default:
         return HomeTab(
           transactions: transactions,
+          categories: categories,
           budgetLimits: budgetLimits,
           userName: userName,
           onTransactionTap: _openEditTransaction,
-          onOpenReports: () => _openReports(transactions),
+          onOpenReports: () => _openReports(transactions, categories),
           onSeeAll: _showActivity,
           onToggleTheme: widget.onToggleTheme,
         );
     }
   }
 
-  void _openReports(List<Transaction> transactions) {
+  void _openReports(
+    List<Transaction> transactions,
+    List<CategoryDefinition> categories,
+  ) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ReportAnalytics(transactions: transactions),
+        builder: (context) =>
+            ReportAnalytics(transactions: transactions, categories: categories),
       ),
     );
   }

@@ -4,6 +4,8 @@ List<BudgetViewData> _buildMonthlyBudgets(
   List<Transaction> transactions,
   DateTime month,
   Map<String, double> budgetLimits,
+  List<CategoryDefinition> categories,
+  Brightness brightness,
 ) {
   final spending = <String, double>{};
   for (final transaction in transactions.where(
@@ -19,19 +21,22 @@ List<BudgetViewData> _buildMonthlyBudgets(
     );
   }
 
-  final categories = <String>{
-    ...budgetLimits.keys,
-    ...spending.keys,
-  };
-  return categories.map((category) {
+  final categoryNames = <String>{...budgetLimits.keys, ...spending.keys};
+  return categoryNames.map((category) {
     final spent = spending[category] ?? 0;
     final limit = budgetLimits[category];
     final ratio = limit == null || limit == 0 ? 0.0 : spent / limit;
+    final categoryColor = categoryVisual(
+      category,
+      isExpense: true,
+      categories: categories,
+      brightness: brightness,
+    ).foreground;
     final color = ratio >= 1
         ? AppColors.danger
         : ratio >= 0.8
-            ? AppColors.warning
-            : AppColors.primary;
+        ? AppColors.warning
+        : categoryColor;
     return BudgetViewData(
       category: category,
       spent: spent,
@@ -40,4 +45,3 @@ List<BudgetViewData> _buildMonthlyBudgets(
     );
   }).toList();
 }
-

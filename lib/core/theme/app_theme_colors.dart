@@ -125,21 +125,40 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       border: Color.lerp(border, other.border, t)!,
-      dangerBackground: Color.lerp(dangerBackground, other.dangerBackground, t)!,
+      dangerBackground: Color.lerp(
+        dangerBackground,
+        other.dangerBackground,
+        t,
+      )!,
       dangerText: Color.lerp(dangerText, other.dangerText, t)!,
-      expenseBackground: Color.lerp(expenseBackground, other.expenseBackground, t)!,
+      expenseBackground: Color.lerp(
+        expenseBackground,
+        other.expenseBackground,
+        t,
+      )!,
       expenseText: Color.lerp(expenseText, other.expenseText, t)!,
-      incomeBackground: Color.lerp(incomeBackground, other.incomeBackground, t)!,
+      incomeBackground: Color.lerp(
+        incomeBackground,
+        other.incomeBackground,
+        t,
+      )!,
       incomeText: Color.lerp(incomeText, other.incomeText, t)!,
-      categoryBackground: Color.lerp(categoryBackground, other.categoryBackground, t)!,
+      categoryBackground: Color.lerp(
+        categoryBackground,
+        other.categoryBackground,
+        t,
+      )!,
       categoryText: Color.lerp(categoryText, other.categoryText, t)!,
-      warningBackground: Color.lerp(warningBackground, other.warningBackground, t)!,
+      warningBackground: Color.lerp(
+        warningBackground,
+        other.warningBackground,
+        t,
+      )!,
       warningText: Color.lerp(warningText, other.warningText, t)!,
     );
   }
 }
 
 extension AppThemeContext on BuildContext {
-  AppThemeColors get themeColors =>
-      Theme.of(this).extension<AppThemeColors>()!;
+  AppThemeColors get themeColors => Theme.of(this).extension<AppThemeColors>()!;
 }

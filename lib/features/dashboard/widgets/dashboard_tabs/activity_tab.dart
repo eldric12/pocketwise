@@ -10,10 +10,12 @@ class ActivityTab extends StatefulWidget {
   const ActivityTab({
     super.key,
     required this.transactions,
+    required this.categories,
     required this.onTransactionTap,
   });
 
   final List<Transaction> transactions;
+  final List<CategoryDefinition> categories;
   final ValueChanged<Transaction> onTransactionTap;
 
   @override
@@ -144,6 +146,7 @@ class _ActivityTabState extends State<ActivityTab> {
                       _CategoryFilterMenu(
                         value: _categoryFilter,
                         categories: categories,
+                        categoryDefinitions: widget.categories,
                         onChanged: (value) {
                           if (value == _categoryFilter) return;
                           HapticFeedback.selectionClick();
@@ -171,6 +174,7 @@ class _ActivityTabState extends State<ActivityTab> {
               ActivityGroup(
                 title: _dateLabel(groupedTransactions[i].key),
                 transactions: groupedTransactions[i].value,
+                categories: widget.categories,
                 onTransactionTap: widget.onTransactionTap,
               ),
               if (i != groupedTransactions.length - 1)
@@ -392,11 +396,13 @@ class _CategoryFilterMenu extends StatelessWidget {
   const _CategoryFilterMenu({
     required this.value,
     required this.categories,
+    required this.categoryDefinitions,
     required this.onChanged,
   });
 
   final String value;
   final List<String> categories;
+  final List<CategoryDefinition> categoryDefinitions;
   final ValueChanged<String> onChanged;
 
   @override
@@ -426,7 +432,7 @@ class _CategoryFilterMenu extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    _iconFor(category),
+                    _iconFor(context, category),
                     size: 20,
                     color: category == value
                         ? AppColors.primary
@@ -510,7 +516,12 @@ class _CategoryFilterMenu extends StatelessWidget {
   String _labelFor(String category) =>
       category == _allCategoriesFilter ? 'All categories' : category;
 
-  IconData _iconFor(String category) => category == _allCategoriesFilter
-      ? Icons.category_outlined
-      : categoryVisual(category).icon;
+  IconData _iconFor(BuildContext context, String category) {
+    if (category == _allCategoriesFilter) return Icons.category_outlined;
+    return categoryVisual(
+      category,
+      categories: categoryDefinitions,
+      brightness: Theme.of(context).brightness,
+    ).icon;
+  }
 }

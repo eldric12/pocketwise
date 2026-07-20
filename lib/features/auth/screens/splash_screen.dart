@@ -62,7 +62,7 @@ class _SplashPatternPainter extends CustomPainter {
 }
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen ({super.key, required this.onToggleTheme});
+  const SplashScreen({super.key, required this.onToggleTheme});
 
   final VoidCallback onToggleTheme;
 
@@ -78,7 +78,8 @@ class _WelcomeScreenState extends State<SplashScreen> {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => LoginScreen(onToggleTheme: widget.onToggleTheme),
+          builder: (context) =>
+              LoginScreen(onToggleTheme: widget.onToggleTheme),
         ),
       );
     });

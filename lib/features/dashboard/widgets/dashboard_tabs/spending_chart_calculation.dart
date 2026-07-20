@@ -2,12 +2,18 @@ part of '../dashboard_tabs.dart';
 
 // Line Chart
 enum TrendFilter { weekly, monthly, yearly }
+
 final now = DateTime.now();
 
-List<ChartLegendItem> getWeeklyChartItems(List<Transaction> transactions, DateTime now) {
-  
-  final startOfWeek = DateTime(now.year, now.month, now.day)
-      .subtract(Duration(days: now.weekday - 1)); // Monday
+List<ChartLegendItem> getWeeklyChartItems(
+  List<Transaction> transactions,
+  DateTime now,
+) {
+  final startOfWeek = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  ).subtract(Duration(days: now.weekday - 1)); // Monday
   const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   final spendingByDay = <int, double>{for (var i = 0; i < 7; i++) i: 0};
@@ -29,14 +35,16 @@ List<ChartLegendItem> getWeeklyChartItems(List<Transaction> transactions, DateTi
   );
 }
 
-List<ChartLegendItem> getDailyChartItems(List<Transaction> transactions, DateTime now) {
-
+List<ChartLegendItem> getDailyChartItems(
+  List<Transaction> transactions,
+  DateTime now,
+) {
   final spendingByDay = <int, double>{};
 
-  for (final tx in transactions.where((tx) =>
-      tx.isExpense &&
-      tx.date.year == now.year &&
-      tx.date.month == now.month)) {
+  for (final tx in transactions.where(
+    (tx) =>
+        tx.isExpense && tx.date.year == now.year && tx.date.month == now.month,
+  )) {
     spendingByDay.update(
       tx.date.day,
       (value) => value + tx.amount,
@@ -56,11 +64,23 @@ List<ChartLegendItem> getDailyChartItems(List<Transaction> transactions, DateTim
     ..sort((a, b) => int.parse(a.label).compareTo(int.parse(b.label)));
 }
 
-List<ChartLegendItem> getYearlyChartItems(List<Transaction> transactions, DateTime now) {
-
+List<ChartLegendItem> getYearlyChartItems(
+  List<Transaction> transactions,
+  DateTime now,
+) {
   const monthLabels = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   final spendingByMonth = <int, double>{for (var i = 1; i <= 12; i++) i: 0};
@@ -83,19 +103,24 @@ List<ChartLegendItem> getYearlyChartItems(List<Transaction> transactions, DateTi
 }
 
 // Pie Chart
-List<ChartLegendItem> getWeeklyCategoryItems(List<Transaction> transactions, DateTime now) {
-
-  final startOfWeek = DateTime(now.year, now.month, now.day)
-      .subtract(Duration(days: now.weekday - 1));
+List<ChartLegendItem> getWeeklyCategoryItems(
+  List<Transaction> transactions,
+  DateTime now,
+  List<CategoryDefinition> categories,
+  Brightness brightness,
+) {
+  final startOfWeek = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  ).subtract(Duration(days: now.weekday - 1));
 
   final spendingByCategory = <String, double>{};
 
   for (final tx in transactions.where((tx) {
     final diff = tx.date.difference(startOfWeek).inDays;
 
-    return tx.isExpense &&
-        diff >= 0 &&
-        diff < 7;
+    return tx.isExpense && diff >= 0 && diff < 7;
   })) {
     spendingByCategory.update(
       tx.categoryLabel,
@@ -104,17 +129,25 @@ List<ChartLegendItem> getWeeklyCategoryItems(List<Transaction> transactions, Dat
     );
   }
 
-  return buildChartItems(spendingByCategory);
+  return buildChartItems(
+    spendingByCategory,
+    categories: categories,
+    brightness: brightness,
+  );
 }
 
-List<ChartLegendItem> getMonthlyChartItems(List<Transaction> transactions, DateTime now) {
-
+List<ChartLegendItem> getMonthlyChartItems(
+  List<Transaction> transactions,
+  DateTime now,
+  List<CategoryDefinition> categories,
+  Brightness brightness,
+) {
   final spendingByCategory = <String, double>{};
 
-  for (final tx in transactions.where((tx) =>
-      tx.isExpense &&
-      tx.date.year == now.year &&
-      tx.date.month == now.month)) {
+  for (final tx in transactions.where(
+    (tx) =>
+        tx.isExpense && tx.date.year == now.year && tx.date.month == now.month,
+  )) {
     spendingByCategory.update(
       tx.categoryLabel,
       (value) => value + tx.amount,
@@ -122,16 +155,24 @@ List<ChartLegendItem> getMonthlyChartItems(List<Transaction> transactions, DateT
     );
   }
 
-  return buildChartItems(spendingByCategory);
+  return buildChartItems(
+    spendingByCategory,
+    categories: categories,
+    brightness: brightness,
+  );
 }
 
-List<ChartLegendItem> getYearlyCategoryItems(List<Transaction> transactions, DateTime now) {
-
+List<ChartLegendItem> getYearlyCategoryItems(
+  List<Transaction> transactions,
+  DateTime now,
+  List<CategoryDefinition> categories,
+  Brightness brightness,
+) {
   final spendingByCategory = <String, double>{};
 
-  for (final tx in transactions.where((tx) =>
-      tx.isExpense &&
-      tx.date.year == now.year)) {
+  for (final tx in transactions.where(
+    (tx) => tx.isExpense && tx.date.year == now.year,
+  )) {
     spendingByCategory.update(
       tx.categoryLabel,
       (value) => value + tx.amount,
@@ -139,14 +180,23 @@ List<ChartLegendItem> getYearlyCategoryItems(List<Transaction> transactions, Dat
     );
   }
 
-  return buildChartItems(spendingByCategory);
+  return buildChartItems(
+    spendingByCategory,
+    categories: categories,
+    brightness: brightness,
+  );
 }
 
 // Bar Chart
-IncomeExpenseItem getWeeklyIncomeExpense(List<Transaction> transactions, DateTime now) {
-
-  final startOfWeek = DateTime(now.year, now.month, now.day)
-      .subtract(Duration(days: now.weekday - 1));
+IncomeExpenseItem getWeeklyIncomeExpense(
+  List<Transaction> transactions,
+  DateTime now,
+) {
+  final startOfWeek = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  ).subtract(Duration(days: now.weekday - 1));
 
   double income = 0;
   double expense = 0;
@@ -163,20 +213,18 @@ IncomeExpenseItem getWeeklyIncomeExpense(List<Transaction> transactions, DateTim
     }
   }
 
-  return IncomeExpenseItem(
-    income: income,
-    expense: expense,
-  );
+  return IncomeExpenseItem(income: income, expense: expense);
 }
 
-IncomeExpenseItem getMonthlyIncomeExpense(List<Transaction> transactions, DateTime now) {
-
+IncomeExpenseItem getMonthlyIncomeExpense(
+  List<Transaction> transactions,
+  DateTime now,
+) {
   double income = 0;
   double expense = 0;
 
   for (final tx in transactions) {
-    if (tx.date.year == now.year &&
-        tx.date.month == now.month) {
+    if (tx.date.year == now.year && tx.date.month == now.month) {
       if (tx.isExpense) {
         expense += tx.amount;
       } else {
@@ -185,14 +233,13 @@ IncomeExpenseItem getMonthlyIncomeExpense(List<Transaction> transactions, DateTi
     }
   }
 
-  return IncomeExpenseItem(
-    income: income,
-    expense: expense,
-  );
+  return IncomeExpenseItem(income: income, expense: expense);
 }
 
-IncomeExpenseItem getYearlyIncomeExpense(List<Transaction> transactions, DateTime now) {
-
+IncomeExpenseItem getYearlyIncomeExpense(
+  List<Transaction> transactions,
+  DateTime now,
+) {
   double income = 0;
   double expense = 0;
 
@@ -206,17 +253,19 @@ IncomeExpenseItem getYearlyIncomeExpense(List<Transaction> transactions, DateTim
     }
   }
 
-  return IncomeExpenseItem(
-    income: income,
-    expense: expense,
-  );
+  return IncomeExpenseItem(income: income, expense: expense);
 }
 
-QuickStatistics getWeeklyStatistics(List<Transaction> transactions, DateTime now) {
-  
+QuickStatistics getWeeklyStatistics(
+  List<Transaction> transactions,
+  DateTime now,
+) {
   final filtered = transactions.where((tx) {
-    final startOfWeek = DateTime(now.year, now.month, now.day)
-        .subtract(Duration(days: now.weekday - 1));
+    final startOfWeek = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday - 1));
 
     final diff = tx.date.difference(startOfWeek).inDays;
 
@@ -226,28 +275,29 @@ QuickStatistics getWeeklyStatistics(List<Transaction> transactions, DateTime now
   return _calculateStatistics(filtered);
 }
 
-
-QuickStatistics getMonthlyStatistics(List<Transaction> transactions, DateTime now) {
-  
-  final filtered = transactions.where((tx) =>
-      tx.date.year == now.year &&
-      tx.date.month == now.month
-  ).toList();
+QuickStatistics getMonthlyStatistics(
+  List<Transaction> transactions,
+  DateTime now,
+) {
+  final filtered = transactions
+      .where((tx) => tx.date.year == now.year && tx.date.month == now.month)
+      .toList();
 
   return _calculateStatistics(filtered);
 }
 
-QuickStatistics getYearlyStatistics(List<Transaction> transactions, DateTime now) {
-  
-  final filtered = transactions.where((tx) =>
-      tx.date.year == now.year
-  ).toList();
+QuickStatistics getYearlyStatistics(
+  List<Transaction> transactions,
+  DateTime now,
+) {
+  final filtered = transactions
+      .where((tx) => tx.date.year == now.year)
+      .toList();
 
   return _calculateStatistics(filtered);
 }
 
 QuickStatistics _calculateStatistics(List<Transaction> transactions) {
-  
   Transaction? highestExpense;
   Transaction? highestIncome;
 
@@ -259,8 +309,7 @@ QuickStatistics _calculateStatistics(List<Transaction> transactions) {
     if (tx.isExpense) {
       totalExpense += tx.amount;
 
-      if (highestExpense == null ||
-          tx.amount > highestExpense.amount) {
+      if (highestExpense == null || tx.amount > highestExpense.amount) {
         highestExpense = tx;
       }
 
@@ -270,8 +319,7 @@ QuickStatistics _calculateStatistics(List<Transaction> transactions) {
         ifAbsent: () => 1,
       );
     } else {
-      if (highestIncome == null ||
-          tx.amount > highestIncome.amount) {
+      if (highestIncome == null || tx.amount > highestIncome.amount) {
         highestIncome = tx;
       }
     }

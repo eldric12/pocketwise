@@ -1,10 +1,7 @@
 part of '../dashboard_tabs.dart';
 
 class QuickStatisticsCard extends StatelessWidget {
-  const QuickStatisticsCard({
-    super.key,
-    required this.stats
-  });
+  const QuickStatisticsCard({super.key, required this.stats});
 
   final QuickStatistics stats;
 
@@ -17,10 +14,10 @@ class QuickStatisticsCard extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: context.themeColors.expenseText.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(16)
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.attach_money_outlined)
-          ), 
+            child: const Icon(Icons.attach_money_outlined),
+          ),
           title: Text(
             'Highest Expense',
             style: GoogleFonts.inter(
@@ -35,19 +32,21 @@ class QuickStatisticsCard extends StatelessWidget {
               color: context.themeColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w400,
-            )
+            ),
           ),
           trailing: Text(
-            stats.highestExpense == null ? '-' : '-RM${stats.highestExpense!.amount.toStringAsFixed(2)}',
+            stats.highestExpense == null
+                ? '-'
+                : '-RM${stats.highestExpense!.amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.red,
               fontSize: 12,
               fontWeight: FontWeight.w700,
-            )
+            ),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-          ), 
+          ),
           tileColor: context.themeColors.expenseBackground,
           onTap: () {},
         ),
@@ -57,17 +56,17 @@ class QuickStatisticsCard extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: context.themeColors.incomeText.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(16)
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.wallet_outlined)
-          ), 
+            child: const Icon(Icons.wallet_outlined),
+          ),
           title: Text(
             'Highest Income',
             style: GoogleFonts.inter(
               color: context.themeColors.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w400,
-            )
+            ),
           ),
           subtitle: Text(
             stats.highestIncome?.categoryLabel ?? 'No income',
@@ -75,21 +74,23 @@ class QuickStatisticsCard extends StatelessWidget {
               color: context.themeColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w400,
-            )
+            ),
           ),
           trailing: Text(
-            stats.highestIncome == null ? '-' : '+RM${stats.highestIncome!.amount.toStringAsFixed(2)}',
+            stats.highestIncome == null
+                ? '-'
+                : '+RM${stats.highestIncome!.amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.green,
               fontSize: 12,
               fontWeight: FontWeight.w700,
-            )
+            ),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-          ), 
+          ),
           tileColor: context.themeColors.incomeBackground,
-          onTap: () {}, 
+          onTap: () {},
         ),
         const SizedBox(height: 12),
         ListTile(
@@ -97,17 +98,17 @@ class QuickStatisticsCard extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: context.themeColors.categoryText.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(16)
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.category)
-          ), 
+            child: const Icon(Icons.category),
+          ),
           title: Text(
             'Most used category',
             style: GoogleFonts.inter(
               color: context.themeColors.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w400,
-            )
+            ),
           ),
           subtitle: Text(
             stats.mostUsedCategory ?? '',
@@ -115,14 +116,14 @@ class QuickStatisticsCard extends StatelessWidget {
               color: context.themeColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w400,
-            )
+            ),
           ),
           trailing: Text(stats.mostUsedCategory ?? '-'),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-          ), 
+          ),
           tileColor: context.themeColors.categoryBackground,
-          onTap: () {}, 
+          onTap: () {},
         ),
         const SizedBox(height: 12),
         ListTile(
@@ -130,9 +131,9 @@ class QuickStatisticsCard extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: context.themeColors.warningText.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(16)
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.wallet_outlined)
+            child: const Icon(Icons.wallet_outlined),
           ),
           title: Text(
             'Average Daily Spending',
@@ -144,20 +145,22 @@ class QuickStatisticsCard extends StatelessWidget {
           ),
           subtitle: const Text(''),
           trailing: Text(
-            stats.averageDailySpending == 0 ? '-' : '- RM${stats.averageDailySpending.toStringAsFixed(2)}',
+            stats.averageDailySpending == 0
+                ? '-'
+                : '- RM${stats.averageDailySpending.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: context.themeColors.warningText,
               fontSize: 12,
               fontWeight: FontWeight.w700,
-            )
+            ),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-          ), 
+          ),
           tileColor: context.themeColors.warningBackground,
-          onTap: () {}, 
+          onTap: () {},
         ),
-      ]
+      ],
     );
   }
 }

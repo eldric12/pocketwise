@@ -1,8 +1,9 @@
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart' hide Transaction;
 
-import '../models/custom_category.dart';
+import '../models/category_definition.dart';
 import '../models/transaction.dart';
+import '../utils/category_catalog.dart';
 
 class LocalFinanceService {
   LocalFinanceService._();
@@ -21,8 +22,9 @@ class LocalFinanceService {
     );
     final database = await openDatabase(
       databasePath,
-      version: 1,
+      version: 2,
       onCreate: (db, _) => _createTables(db),
+      onUpgrade: _upgradeDatabase,
     );
     _database = database;
     return database;
@@ -52,14 +54,51 @@ class LocalFinanceService {
         PRIMARY KEY (user_id, category)
       )
     ''');
+    await _createCategoriesTable(db);
+  }
+
+  Future<void> _createCategoriesTable(Database db) async {
     await db.execute('''
-      CREATE TABLE custom_categories (
+      CREATE TABLE IF NOT EXISTS categories (
         user_id TEXT NOT NULL,
+        id TEXT NOT NULL,
         label TEXT NOT NULL,
         is_expense INTEGER NOT NULL,
-        PRIMARY KEY (user_id, label, is_expense)
+        icon_key TEXT NOT NULL,
+        color_key TEXT NOT NULL,
+        is_custom INTEGER NOT NULL,
+        PRIMARY KEY (user_id, id, is_expense),
+        UNIQUE (user_id, label, is_expense)
       )
     ''');
+  }
+
+  Future<void> _upgradeDatabase(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    if (oldVersion >= 2) return;
+    await _createCategoriesTable(db);
+
+    final legacyTable = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'custom_categories'",
+    );
+    if (legacyTable.isEmpty) return;
+
+    final rows = await db.query('custom_categories');
+    for (final row in rows) {
+      final label = row['label'] as String;
+      await db.insert('categories', {
+        'user_id': row['user_id'] as String,
+        'id': legacyCategoryId(label),
+        'label': label,
+        'is_expense': row['is_expense'] as int,
+        'icon_key': 'category',
+        'color_key': 'slate',
+        'is_custom': 1,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
   }
 
   Future<List<Transaction>> loadTransactions(String userId) async {
@@ -141,33 +180,51 @@ class LocalFinanceService {
     );
   }
 
-  Future<List<CustomCategory>> loadCustomCategories(String userId) async {
+  Future<List<CategoryDefinition>> loadCategories(String userId) async {
     final db = await _db;
+    await db.transaction((txn) async {
+      for (final category in defaultCategories) {
+        await txn.insert('categories', {
+          'user_id': userId,
+          'id': category.id,
+          'label': category.label,
+          'is_expense': category.isExpense ? 1 : 0,
+          'icon_key': category.iconKey,
+          'color_key': category.colorKey,
+          'is_custom': 0,
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+    });
     final rows = await db.query(
-      'custom_categories',
+      'categories',
       where: 'user_id = ?',
       whereArgs: [userId],
-      orderBy: 'label COLLATE NOCASE',
+      orderBy: 'is_expense DESC, is_custom ASC, label COLLATE NOCASE',
     );
     return rows
         .map(
-          (row) => CustomCategory(
+          (row) => CategoryDefinition(
+            id: row['id'] as String,
             label: row['label'] as String,
             isExpense: (row['is_expense'] as int) == 1,
+            iconKey: row['icon_key'] as String,
+            colorKey: row['color_key'] as String,
+            isCustom: (row['is_custom'] as int) == 1,
           ),
         )
         .toList();
   }
 
-  Future<void> saveCustomCategory(
-    String userId,
-    CustomCategory category,
-  ) async {
+  Future<void> saveCategory(String userId, CategoryDefinition category) async {
     final db = await _db;
-    await db.insert('custom_categories', {
+    await db.insert('categories', {
       'user_id': userId,
+      'id': category.id,
       'label': category.label,
       'is_expense': category.isExpense ? 1 : 0,
-    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      'icon_key': category.iconKey,
+      'color_key': category.colorKey,
+      'is_custom': category.isCustom ? 1 : 0,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 }

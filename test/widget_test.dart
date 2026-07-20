@@ -1,16 +1,14 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pocketwise/app/app.dart';
 
 void main() {
-  testWidgets('PocketWise dashboard loads', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(child: PocketWiseApp()),
-    );
+  testWidgets('PocketWise app loads', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: PocketWiseApp()));
     await tester.pump();
 
-    expect(find.text('Your financial overview'), findsOneWidget);
-    expect(find.text('Total Spending'), findsOneWidget);
-    expect(find.text('ALL TIME'), findsOneWidget);
+    expect(find.text('PocketWise'), findsOneWidget);
+    expect(find.byIcon(Icons.account_balance_wallet_rounded), findsOneWidget);
   });
 }

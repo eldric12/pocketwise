@@ -33,15 +33,15 @@ class _PocketWiseAppState extends State<PocketWiseApp> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final colors = context.themeColors;
         return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: (isDark
-                  ? SystemUiOverlayStyle.light
-                  : SystemUiOverlayStyle.dark)
-              .copyWith(
-            statusBarColor: Colors.transparent,
-            systemNavigationBarColor: colors.background,
-            systemNavigationBarIconBrightness:
-                isDark ? Brightness.light : Brightness.dark,
-          ),
+          value:
+              (isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
+                  .copyWith(
+                    statusBarColor: Colors.transparent,
+                    systemNavigationBarColor: colors.background,
+                    systemNavigationBarIconBrightness: isDark
+                        ? Brightness.light
+                        : Brightness.dark,
+                  ),
           child: DevicePreview.appBuilder(context, child),
         );
       },
@@ -61,10 +61,7 @@ class _PocketWiseAppState extends State<PocketWiseApp> {
     final isDark = brightness == Brightness.dark;
     final textTheme = GoogleFonts.interTextTheme(
       isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
-    ).apply(
-      bodyColor: colors.textPrimary,
-      displayColor: colors.textPrimary,
-    );
+    ).apply(bodyColor: colors.textPrimary, displayColor: colors.textPrimary);
 
     return ThemeData(
       useMaterial3: true,

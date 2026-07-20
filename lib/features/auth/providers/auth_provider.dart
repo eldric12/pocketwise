@@ -14,10 +14,11 @@ final currentUserNameProvider = StreamProvider<String?>((ref) async* {
   }
 
   try {
-    await for (final snapshot in FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .snapshots()) {
+    await for (final snapshot
+        in FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .snapshots()) {
       final rawName = snapshot.data()?['name'];
       final firestoreName = rawName is String ? rawName.trim() : null;
       if (firestoreName != null && firestoreName.isNotEmpty) {

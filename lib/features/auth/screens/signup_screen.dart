@@ -42,7 +42,10 @@ class _SignupScreenState extends State<SignupScreen> {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       setState(() => _errorText = 'Please fill in all fields.');
       return;
     }
@@ -100,7 +103,10 @@ class _SignupScreenState extends State<SignupScreen> {
       backgroundColor: colors.background,
       body: Column(
         children: [
-          AuthHeaderWave(onBackPressed: () => Navigator.of(context).pop(), centerBrand: true),
+          AuthHeaderWave(
+            onBackPressed: () => Navigator.of(context).pop(),
+            centerBrand: true,
+          ),
           Expanded(
             child: SafeArea(
               top: false,
@@ -159,22 +165,27 @@ class _SignupScreenState extends State<SignupScreen> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       style: GoogleFonts.inter(color: colors.textPrimary),
-                      decoration: _fieldDecoration(
-                        colors,
-                        hint: 'Enter your password',
-                        icon: Icons.lock_outline_rounded,
-                      ).copyWith(
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                            color: colors.textSecondary,
-                            size: 20,
+                      decoration:
+                          _fieldDecoration(
+                            colors,
+                            hint: 'Enter your password',
+                            icon: Icons.lock_outline_rounded,
+                          ).copyWith(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: colors.textSecondary,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                );
+                              },
+                            ),
                           ),
-                          onPressed: () {
-                            setState(() => _obscurePassword = !_obscurePassword);
-                          },
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 18),
                     _buildLabel('Confirm Password', colors),
@@ -183,28 +194,37 @@ class _SignupScreenState extends State<SignupScreen> {
                       controller: _confirmPasswordController,
                       obscureText: _obscureConfirmPassword,
                       style: GoogleFonts.inter(color: colors.textPrimary),
-                      decoration: _fieldDecoration(
-                        colors,
-                        hint: 'Confirm your password',
-                        icon: Icons.lock_outline_rounded,
-                      ).copyWith(
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                            color: colors.textSecondary,
-                            size: 20,
+                      decoration:
+                          _fieldDecoration(
+                            colors,
+                            hint: 'Confirm your password',
+                            icon: Icons.lock_outline_rounded,
+                          ).copyWith(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: colors.textSecondary,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscureConfirmPassword =
+                                      !_obscureConfirmPassword,
+                                );
+                              },
+                            ),
                           ),
-                          onPressed: () {
-                            setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
-                          },
-                        ),
-                      ),
                     ),
                     if (_errorText != null) ...[
                       const SizedBox(height: 12),
                       Text(
                         _errorText!,
-                        style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13),
+                        style: GoogleFonts.inter(
+                          color: Colors.redAccent,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                     const SizedBox(height: 24),
@@ -243,7 +263,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       children: [
                         Text(
                           'Already have an Account? ',
-                          style: GoogleFonts.inter(color: colors.textSecondary, fontSize: 13),
+                          style: GoogleFonts.inter(
+                            color: colors.textSecondary,
+                            fontSize: 13,
+                          ),
                         ),
                         GestureDetector(
                           onTap: () => Navigator.of(context).pop(),

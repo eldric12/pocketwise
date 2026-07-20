@@ -2,33 +2,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/services/transaction_service.dart';
-import '../models/custom_category.dart';
+import '../models/category_definition.dart';
 import '../models/transaction.dart';
 import '../services/local_finance_service.dart';
 
 class DashboardState {
   final List<Transaction> transactions;
   final Map<String, double> budgetLimits;
-  final List<CustomCategory> customCategories;
+  final List<CategoryDefinition> categories;
   final bool isLoading;
 
   DashboardState({
     required this.transactions,
     this.budgetLimits = const {},
-    this.customCategories = const [],
+    this.categories = const [],
     this.isLoading = false,
   });
 
   DashboardState copyWith({
     List<Transaction>? transactions,
     Map<String, double>? budgetLimits,
-    List<CustomCategory>? customCategories,
+    List<CategoryDefinition>? categories,
     bool? isLoading,
   }) {
     return DashboardState(
       transactions: transactions ?? this.transactions,
       budgetLimits: budgetLimits ?? this.budgetLimits,
-      customCategories: customCategories ?? this.customCategories,
+      categories: categories ?? this.categories,
       isLoading: isLoading ?? this.isLoading,
     );
   }
@@ -54,12 +54,13 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       final budgetLimits = await LocalFinanceService.instance.loadBudgets(
         userId!,
       );
-      final customCategories = await LocalFinanceService.instance
-          .loadCustomCategories(userId!);
+      final categories = await LocalFinanceService.instance.loadCategories(
+        userId!,
+      );
       state = state.copyWith(
         transactions: localTransactions,
         budgetLimits: budgetLimits,
-        customCategories: customCategories,
+        categories: categories,
         isLoading: false,
       );
     } catch (_) {
@@ -123,17 +124,29 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(budgetLimits: updatedLimits);
   }
 
-  Future<void> addCustomCategory(CustomCategory category) async {
+  Future<void> addCategory(CategoryDefinition category) async {
     if (userId == null) return;
-    await LocalFinanceService.instance.saveCustomCategory(userId!, category);
-    final alreadyExists = state.customCategories.any(
+    await LocalFinanceService.instance.saveCategory(userId!, category);
+    final alreadyExists = state.categories.any(
       (item) =>
           item.isExpense == category.isExpense &&
           item.label.toLowerCase() == category.label.toLowerCase(),
     );
     if (alreadyExists) return;
+    state = state.copyWith(categories: [...state.categories, category]);
+  }
+
+  Future<void> updateCategory(CategoryDefinition category) async {
+    if (userId == null) return;
+    await LocalFinanceService.instance.saveCategory(userId!, category);
     state = state.copyWith(
-      customCategories: [...state.customCategories, category],
+      categories: [
+        for (final item in state.categories)
+          if (item.id == category.id && item.isExpense == category.isExpense)
+            category
+          else
+            item,
+      ],
     );
   }
 }

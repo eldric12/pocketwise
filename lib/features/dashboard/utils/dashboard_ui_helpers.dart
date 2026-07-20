@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../models/category_definition.dart';
 import '../models/dashboard_ui_models.dart';
+import 'category_catalog.dart';
 
-List<ChartLegendItem> buildChartItems(Map<String, double> values) {
-  const palette = [
-    AppColors.danger,
-    AppColors.warning,
-    AppColors.primary,
-    AppColors.success,
-    Color(0xFF38BDF8),
-  ];
+List<ChartLegendItem> buildChartItems(
+  Map<String, double> values, {
+  List<CategoryDefinition> categories = const [],
+  Brightness brightness = Brightness.dark,
+}) {
   final entries = values.entries.toList()
     ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -27,50 +25,51 @@ List<ChartLegendItem> buildChartItems(Map<String, double> values) {
       ChartLegendItem(
         label: visibleEntries[i].key,
         amount: visibleEntries[i].value,
-        color: palette[i % palette.length],
+        color: categoryVisual(
+          visibleEntries[i].key,
+          isExpense: true,
+          categories: categories,
+          brightness: brightness,
+        ).foreground,
       ),
     if (remainingTotal > 0)
       ChartLegendItem(
         label: 'Other',
         amount: remainingTotal,
-        color: palette[4],
+        color: categoryColor('slate').accent,
       ),
   ];
 }
 
-CategoryVisual categoryVisual(String category) {
-  switch (category.toLowerCase()) {
-    case 'food':
-      return const CategoryVisual(
-        icon: Icons.restaurant_rounded,
-        background: Color(0xFF503447),
-        foreground: Color(0xFFFF93AB),
-      );
-    case 'transport':
-      return const CategoryVisual(
-        icon: Icons.local_taxi_rounded,
-        background: Color(0xFF4E442B),
-        foreground: Color(0xFFFACB45),
-      );
-    case 'salary':
-      return const CategoryVisual(
-        icon: Icons.account_balance_wallet_outlined,
-        background: Color(0xFF173E42),
-        foreground: Color(0xFF4DE2B6),
-      );
-    case 'bills':
-      return const CategoryVisual(
-        icon: Icons.receipt_long_outlined,
-        background: Color(0xFF2E3760),
-        foreground: Color(0xFF9AA9FF),
-      );
-    default:
-      return const CategoryVisual(
-        icon: Icons.payments_outlined,
-        background: Color(0xFF25314D),
-        foreground: Color(0xFFA9C3EC),
-      );
+CategoryVisual categoryVisual(
+  String label, {
+  String? categoryId,
+  bool? isExpense,
+  List<CategoryDefinition> categories = const [],
+  Brightness brightness = Brightness.dark,
+}) {
+  final source = categories.isEmpty ? defaultCategories : categories;
+  CategoryDefinition? match;
+  if (isExpense != null) {
+    match = findCategory(
+      source,
+      id: categoryId,
+      label: label,
+      isExpense: isExpense,
+    );
+  } else {
+    for (final category in source) {
+      if (categoryId != null && category.id == categoryId) {
+        match = category;
+        break;
+      }
+      if (category.label.toLowerCase() == label.toLowerCase()) {
+        match = category;
+        break;
+      }
+    }
   }
+  return categoryAppearance(match, brightness);
 }
 
 String formatAmount(

@@ -1,130 +1,7 @@
 part of '../new_transaction_screen.dart';
 
-class _AddCategoryDialog extends StatefulWidget {
-  const _AddCategoryDialog({
-    required this.existingNames,
-    required this.accentColor,
-  });
-
-  final Set<String> existingNames;
-  final Color accentColor;
-
-  @override
-  State<_AddCategoryDialog> createState() => _AddCategoryDialogState();
-}
-
-class _AddCategoryDialogState extends State<_AddCategoryDialog> {
-  late final TextEditingController _controller;
-  String? _errorText;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: context.themeColors.surface,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: context.themeColors.border),
-      ),
-      title: Text(
-        'Add category',
-        style: GoogleFonts.inter(
-          color: context.themeColors.textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      content: TextField(
-        controller: _controller,
-        autofocus: true,
-        maxLength: 20,
-        textCapitalization: TextCapitalization.words,
-        style: GoogleFonts.inter(color: context.themeColors.textPrimary, fontSize: 16),
-        decoration: InputDecoration(
-          labelText: 'Category name',
-          hintText: 'e.g. Health',
-          errorText: _errorText,
-          counterText: '',
-          filled: true,
-          fillColor: context.themeColors.background,
-          labelStyle: GoogleFonts.inter(color: context.themeColors.textSecondary),
-          hintStyle: GoogleFonts.inter(color: const Color(0xFF64748B)),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: context.themeColors.border),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: widget.accentColor,
-              width: 1.5,
-            ),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.danger),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.danger),
-          ),
-        ),
-        onChanged: (_) {
-          if (_errorText != null) setState(() => _errorText = null);
-        },
-        onSubmitted: (_) => _submit(),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: _submit,
-          style: FilledButton.styleFrom(
-            backgroundColor: widget.accentColor,
-            foregroundColor: AppColors.background,
-          ),
-          child: const Text('Add category'),
-        ),
-      ],
-    );
-  }
-
-  void _submit() {
-    final name = _controller.text.trim();
-    if (name.isEmpty) {
-      setState(() => _errorText = 'Enter a category name.');
-      return;
-    }
-    final alreadyExists = widget.existingNames.any(
-      (existingName) => existingName.toLowerCase() == name.toLowerCase(),
-    );
-    if (alreadyExists) {
-      setState(() => _errorText = 'This category already exists.');
-      return;
-    }
-    Navigator.pop(context, name);
-  }
-}
-
 class _AddCategoryCard extends StatelessWidget {
-  const _AddCategoryCard({
-    required this.accentColor,
-    required this.onTap,
-  });
+  const _AddCategoryCard({required this.accentColor, required this.onTap});
 
   final Color accentColor;
   final VoidCallback onTap;
@@ -148,9 +25,7 @@ class _AddCategoryCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: accentColor.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: accentColor.withValues(alpha: 0.55),
-              ),
+              border: Border.all(color: accentColor.withValues(alpha: 0.55)),
             ),
             child: Center(
               child: Column(
@@ -163,11 +38,7 @@ class _AddCategoryCard extends StatelessWidget {
                       color: accentColor.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(11),
                     ),
-                    child: Icon(
-                      Icons.add_rounded,
-                      color: foreground,
-                      size: 25,
-                    ),
+                    child: Icon(Icons.add_rounded, color: foreground, size: 25),
                   ),
                   const SizedBox(height: 10),
                   Text(
@@ -197,13 +68,14 @@ class _CategoryCard extends StatelessWidget {
     required this.onTap,
   });
 
-  final _CategoryOption option;
+  final CategoryDefinition option;
   final bool selected;
   final Color accentColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final visual = categoryAppearance(option, Theme.of(context).brightness);
     final selectedForeground = Theme.of(context).brightness == Brightness.dark
         ? Colors.white
         : Color.lerp(accentColor, Colors.black, 0.35)!;
@@ -221,9 +93,7 @@ class _CategoryCard extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: selected
-                  ? accentColor.withValues(alpha: 0.1)
-                  : context.themeColors.surface,
+              color: selected ? visual.background : context.themeColors.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: selected ? accentColor : context.themeColors.border,
@@ -240,16 +110,16 @@ class _CategoryCard extends StatelessWidget {
                         height: 44,
                         decoration: BoxDecoration(
                           color: selected
-                              ? accentColor.withValues(alpha: 0.12)
-                              : const Color(0xFF253348),
+                              ? visual.foreground.withValues(alpha: 0.14)
+                              : visual.background,
                           borderRadius: BorderRadius.circular(11),
                         ),
                         child: Icon(
-                          option.icon,
+                          visual.icon,
                           size: 23,
                           color: selected
                               ? selectedForeground
-                              : context.themeColors.textSecondary,
+                              : visual.foreground,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -263,7 +133,9 @@ class _CategoryCard extends StatelessWidget {
                                 ? selectedForeground
                                 : context.themeColors.textSecondary,
                             fontSize: 14,
-                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                            fontWeight: selected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
                           ),
                         ),
                       ),

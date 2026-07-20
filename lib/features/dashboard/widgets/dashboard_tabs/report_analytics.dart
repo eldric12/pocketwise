@@ -3,10 +3,12 @@ part of '../dashboard_tabs.dart';
 class ReportAnalytics extends StatefulWidget {
   const ReportAnalytics({
     super.key,
-    required this.transactions
+    required this.transactions,
+    required this.categories,
   });
 
   final List<Transaction> transactions;
+  final List<CategoryDefinition> categories;
 
   @override
   State<ReportAnalytics> createState() => _ReportAnalytics();
@@ -33,16 +35,31 @@ class _ReportAnalytics extends State<ReportAnalytics> {
   List<ChartLegendItem> get _categoryItems {
     switch (_filter) {
       case TrendFilter.weekly:
-        return getWeeklyCategoryItems(widget.transactions, now);
+        return getWeeklyCategoryItems(
+          widget.transactions,
+          now,
+          widget.categories,
+          Theme.of(context).brightness,
+        );
 
       case TrendFilter.monthly:
-        return getMonthlyChartItems(widget.transactions, now);
+        return getMonthlyChartItems(
+          widget.transactions,
+          now,
+          widget.categories,
+          Theme.of(context).brightness,
+        );
 
       case TrendFilter.yearly:
-        return getYearlyCategoryItems(widget.transactions, now);
+        return getYearlyCategoryItems(
+          widget.transactions,
+          now,
+          widget.categories,
+          Theme.of(context).brightness,
+        );
     }
   }
-  
+
   IncomeExpenseItem get _incomeExpense {
     switch (_filter) {
       case TrendFilter.weekly:
@@ -79,11 +96,11 @@ class _ReportAnalytics extends State<ReportAnalytics> {
         leading: Padding(
           padding: const EdgeInsets.only(left: 12),
           child: CircleIconButton(
-              icon: Icons.arrow_back_ios,
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
+            icon: Icons.arrow_back_ios,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
         ),
         backgroundColor: context.themeColors.background,
         title: Text(
@@ -92,7 +109,8 @@ class _ReportAnalytics extends State<ReportAnalytics> {
             color: context.themeColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w800,
-          ))
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -118,7 +136,7 @@ class _ReportAnalytics extends State<ReportAnalytics> {
                   label: 'Yearly',
                   selected: _filter == TrendFilter.yearly,
                   onTap: () => _setFilter(TrendFilter.yearly),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 26),
@@ -137,9 +155,7 @@ class _ReportAnalytics extends State<ReportAnalytics> {
                 subtitle: 'No expenses found for this period.',
               )
             else
-              GlassPanel(
-                child: LineChartCard(items: _trendItems)
-              ),
+              GlassPanel(child: LineChartCard(items: _trendItems)),
             const SizedBox(height: 26),
             Text(
               'Category breakdown',
@@ -172,10 +188,10 @@ class _ReportAnalytics extends State<ReportAnalytics> {
               ),
             ),
             const SizedBox(height: 12),
-            QuickStatisticsCard(stats: stats)
+            QuickStatisticsCard(stats: stats),
           ],
         ),
-      )
+      ),
     );
   }
 }

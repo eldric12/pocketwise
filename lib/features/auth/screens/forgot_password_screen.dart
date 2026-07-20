@@ -130,7 +130,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         const SizedBox(height: 8),
                         Text(
                           _errorText!,
-                          style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13),
+                          style: GoogleFonts.inter(
+                            color: Colors.redAccent,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                       const SizedBox(height: 24),

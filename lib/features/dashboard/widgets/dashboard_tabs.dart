@@ -9,9 +9,11 @@ import 'package:pocketwise/features/auth/providers/auth_provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../models/category_definition.dart';
 import '../models/dashboard_ui_models.dart';
 import '../models/dashboard_summary.dart';
 import '../models/transaction.dart';
+import '../screens/manage_categories_screen.dart';
 import '../utils/dashboard_ui_helpers.dart';
 import 'dashboard_common_widgets.dart';
 

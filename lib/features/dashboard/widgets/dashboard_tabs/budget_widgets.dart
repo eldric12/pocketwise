@@ -67,7 +67,9 @@ class _SetBudgetDialogState extends State<_SetBudgetDialog> {
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d{0,7}(\.\d{0,2})?')),
+              FilteringTextInputFormatter.allow(
+                RegExp(r'^\d{0,7}(\.\d{0,2})?'),
+              ),
             ],
             style: GoogleFonts.spaceGrotesk(
               color: context.themeColors.textPrimary,
@@ -80,7 +82,9 @@ class _SetBudgetDialogState extends State<_SetBudgetDialog> {
               errorText: _errorText,
               filled: true,
               fillColor: context.themeColors.background,
-              labelStyle: GoogleFonts.inter(color: context.themeColors.textSecondary),
+              labelStyle: GoogleFonts.inter(
+                color: context.themeColors.textSecondary,
+              ),
               prefixStyle: GoogleFonts.spaceGrotesk(
                 color: context.themeColors.textPrimary,
                 fontSize: 20,
@@ -156,11 +160,7 @@ class _SetBudgetDialogState extends State<_SetBudgetDialog> {
 }
 
 class BudgetCard extends StatelessWidget {
-  const BudgetCard({
-    super.key,
-    required this.data,
-    required this.onSetBudget,
-  });
+  const BudgetCard({super.key, required this.data, required this.onSetBudget});
 
   final BudgetViewData data;
   final VoidCallback onSetBudget;
@@ -316,21 +316,14 @@ class BudgetWarningCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.themeColors.surface.withValues(alpha: 0.52),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: color.withValues(alpha: 0.75),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.75), width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 2),
-            child: Icon(
-              Icons.warning_amber_rounded,
-              color: color,
-              size: 24,
-            ),
+            child: Icon(Icons.warning_amber_rounded, color: color, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -362,4 +355,3 @@ class BudgetWarningCard extends StatelessWidget {
     );
   }
 }
-

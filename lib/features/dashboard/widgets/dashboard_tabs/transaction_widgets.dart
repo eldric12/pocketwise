@@ -4,10 +4,12 @@ class TransactionCardList extends StatelessWidget {
   const TransactionCardList({
     super.key,
     required this.transactions,
+    required this.categories,
     required this.onTransactionTap,
   });
 
   final List<Transaction> transactions;
+  final List<CategoryDefinition> categories;
   final ValueChanged<Transaction> onTransactionTap;
 
   @override
@@ -19,6 +21,7 @@ class TransactionCardList extends StatelessWidget {
           for (var i = 0; i < transactions.length; i++) ...[
             TransactionRow(
               transaction: transactions[i],
+              categories: categories,
               onTap: () => onTransactionTap(transactions[i]),
             ),
             if (i != transactions.length - 1) const PanelDivider(),
@@ -34,11 +37,13 @@ class ActivityGroup extends StatelessWidget {
     super.key,
     required this.title,
     required this.transactions,
+    required this.categories,
     required this.onTransactionTap,
   });
 
   final String title;
   final List<Transaction> transactions;
+  final List<CategoryDefinition> categories;
   final ValueChanged<Transaction> onTransactionTap;
 
   @override
@@ -64,6 +69,7 @@ class ActivityGroup extends StatelessWidget {
         else
           TransactionCardList(
             transactions: transactions,
+            categories: categories,
             onTransactionTap: onTransactionTap,
           ),
       ],
@@ -75,15 +81,23 @@ class TransactionRow extends StatelessWidget {
   const TransactionRow({
     super.key,
     required this.transaction,
+    required this.categories,
     required this.onTap,
   });
 
   final Transaction transaction;
+  final List<CategoryDefinition> categories;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final visual = categoryVisual(transaction.categoryLabel);
+    final visual = categoryVisual(
+      transaction.categoryLabel,
+      categoryId: transaction.categoryId,
+      isExpense: transaction.isExpense,
+      categories: categories,
+      brightness: Theme.of(context).brightness,
+    );
 
     return Semantics(
       button: true,

@@ -26,9 +26,7 @@ class PocketWiseBottomBar extends StatelessWidget {
           height: 88,
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
           decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: context.themeColors.border),
-            )
+            border: Border(top: BorderSide(color: context.themeColors.border)),
           ),
           child: Row(
             children: [
@@ -135,13 +133,17 @@ class BottomNavItem extends StatelessWidget {
             Icon(
               active ? activeIcon : icon,
               size: 19,
-              color: active ? AppColors.primary : context.themeColors.textSecondary,
+              color: active
+                  ? AppColors.primary
+                  : context.themeColors.textSecondary,
             ),
             const SizedBox(height: 6),
             Text(
               label,
               style: GoogleFonts.inter(
-                color: active ? AppColors.primary : context.themeColors.textSecondary,
+                color: active
+                    ? AppColors.primary
+                    : context.themeColors.textSecondary,
                 fontSize: 11,
                 fontWeight: active ? FontWeight.w700 : FontWeight.w500,
               ),

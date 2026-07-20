@@ -4,12 +4,14 @@ class BudgetsTab extends StatelessWidget {
   const BudgetsTab({
     super.key,
     required this.transactions,
+    required this.categories,
     required this.budgetLimits,
     required this.onSetBudget,
     required this.onRemoveBudget,
   });
 
   final List<Transaction> transactions;
+  final List<CategoryDefinition> categories;
   final Map<String, double> budgetLimits;
   final void Function(String category, double limit) onSetBudget;
   final ValueChanged<String> onRemoveBudget;
@@ -17,7 +19,13 @@ class BudgetsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final budgets = _buildMonthlyBudgets(transactions, now, budgetLimits);
+    final budgets = _buildMonthlyBudgets(
+      transactions,
+      now,
+      budgetLimits,
+      categories,
+      Theme.of(context).brightness,
+    );
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -52,7 +60,8 @@ class BudgetsTab extends StatelessWidget {
           if (budgets.isEmpty)
             const EmptyStateCard(
               title: 'No budget categories yet',
-              subtitle: 'Add an expense first, then set a monthly limit for its category.',
+              subtitle:
+                  'Add an expense first, then set a monthly limit for its category.',
             )
           else
             ...budgets.map(
@@ -107,6 +116,3 @@ class BudgetsTab extends StatelessWidget {
     if (result != null) onSetBudget(budget.category, result);
   }
 }
-
-
-

@@ -4,6 +4,7 @@ class HomeTab extends StatelessWidget {
   const HomeTab({
     super.key,
     required this.transactions,
+    required this.categories,
     required this.budgetLimits,
     required this.userName,
     required this.onTransactionTap,
@@ -13,6 +14,7 @@ class HomeTab extends StatelessWidget {
   });
 
   final List<Transaction> transactions;
+  final List<CategoryDefinition> categories;
   final Map<String, double> budgetLimits;
   final String? userName;
   final ValueChanged<Transaction> onTransactionTap;
@@ -27,10 +29,7 @@ class HomeTab extends StatelessWidget {
         .where((tx) => tx.date.year == now.year && tx.date.month == now.month)
         .toList();
     final recent = transactions.take(3).toList();
-    final summary = DashboardSummary.fromTransactions(
-      transactions,
-      month: now,
-    );
+    final summary = DashboardSummary.fromTransactions(transactions, month: now);
     final spendingByCategory = <String, double>{};
 
     for (final tx in monthlyTransactions.where((tx) => tx.isExpense)) {
@@ -41,9 +40,19 @@ class HomeTab extends StatelessWidget {
       );
     }
 
-    final chartItems = buildChartItems(spendingByCategory);
+    final chartItems = buildChartItems(
+      spendingByCategory,
+      categories: categories,
+      brightness: Theme.of(context).brightness,
+    );
     final budgetAlerts =
-        _buildMonthlyBudgets(transactions, now, budgetLimits)
+        _buildMonthlyBudgets(
+              transactions,
+              now,
+              budgetLimits,
+              categories,
+              Theme.of(context).brightness,
+            )
             .where(
               (budget) =>
                   budget.limit != null &&
@@ -94,6 +103,7 @@ class HomeTab extends StatelessWidget {
               else
                 TransactionCardList(
                   transactions: recent,
+                  categories: categories,
                   onTransactionTap: onTransactionTap,
                 ),
               if (warningBudget != null) ...[

@@ -41,6 +41,7 @@ class _TransactionTypeToggle extends StatelessWidget {
     );
   }
 }
+
 class _TypeButton extends StatelessWidget {
   const _TypeButton({
     required this.label,
@@ -69,7 +70,9 @@ class _TypeButton extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: selected ? accent.withValues(alpha: 0.15) : Colors.transparent,
+              color: selected
+                  ? accent.withValues(alpha: 0.15)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(11),
               border: Border.all(color: selected ? accent : Colors.transparent),
             ),
