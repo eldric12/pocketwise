@@ -9,32 +9,34 @@ class TransactionService {
   final _firestore = FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> _userTransactions(String userId) {
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('transactions');
+    return _firestore.collection('users').doc(userId).collection('transactions');
   }
 
   Future<List<Transaction>> getTransactionsForUser(String userId) async {
-    final snapshot = await _userTransactions(
-      userId,
-    ).orderBy('date', descending: true).get();
+    final snapshot = await _userTransactions(userId)
+        .orderBy('date', descending: true)
+        .get();
     return snapshot.docs.map((doc) => Transaction.fromMap(doc.data())).toList();
   }
 
   Future<void> insertTransaction(String userId, Transaction transaction) async {
-    await _userTransactions(
-      userId,
-    ).doc(transaction.id).set(transaction.toMap());
+    await _userTransactions(userId).doc(transaction.id).set(transaction.toMap());
   }
 
   Future<void> updateTransaction(String userId, Transaction transaction) async {
-    await _userTransactions(
-      userId,
-    ).doc(transaction.id).update(transaction.toMap());
+    await _userTransactions(userId).doc(transaction.id).set(transaction.toMap());
   }
 
   Future<void> deleteTransaction(String userId, String id) async {
     await _userTransactions(userId).doc(id).delete();
+  }
+
+  Future<void> clearAllTransactions(String userId) async {
+    final snapshot = await _userTransactions(userId).get();
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
   }
 }

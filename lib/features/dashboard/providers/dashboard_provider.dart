@@ -149,6 +149,18 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       ],
     );
   }
+
+  Future<void> clearAllData() async {
+    if (userId == null) return;
+    state = state.copyWith(isLoading: true);
+    try {
+      await TransactionService.instance.clearAllTransactions(userId!);
+    } catch (_) {
+      // If offline, still clear local data so the UI reflects the reset.
+    }
+    await LocalFinanceService.instance.clearAllData(userId!);
+    await _loadInitialData();
+  }
 }
 
 final dashboardProvider =

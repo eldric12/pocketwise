@@ -96,8 +96,31 @@ class _SettingTabState extends ConsumerState<SettingTab> {
                       MoreRow(
                         icon: Icons.assignment_outlined,
                         label: 'Export CSV',
-                        onTap: () {
-                          // TODO: Implement if needed
+                        onTap: () async {
+                          final transactions =
+                              ref.read(dashboardProvider).transactions;
+                          if (transactions.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('No transactions to export.'),
+                              ),
+                            );
+                            return;
+                          }
+                          final csv = buildTransactionsCsv(transactions);
+                          final fileName =
+                              'pocketwise_transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
+                          final savedPath = await downloadCsv(csv, fileName);
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                kIsWeb
+                                    ? 'CSV download started.'
+                                    : 'Saved to $savedPath',
+                              ),
+                            ),
+                          );
                         },
                       ),
                       const PanelDivider(),
@@ -106,7 +129,6 @@ class _SettingTabState extends ConsumerState<SettingTab> {
                         label: 'Clear All Data',
                         labelColor: Colors.redAccent,
                         onTap: () {
-                          // TODO
                           showDialog(
                             context: context,
                             builder: ((context) {
@@ -123,8 +145,17 @@ class _SettingTabState extends ConsumerState<SettingTab> {
                                     child: const Text('Cancel'),
                                   ),
                                   TextButton(
-                                    onPressed: () {
-                                      // TODO: Implement after setting up database
+                                    onPressed: () async {
+                                      Navigator.pop(context); // close dialog first
+                                      await ref
+                                          .read(dashboardProvider.notifier)
+                                          .clearAllData();
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('All data cleared.'),
+                                        ),
+                                      );
                                     },
                                     child: const Text('Clear All Data'),
                                   ),

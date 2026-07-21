@@ -227,4 +227,13 @@ class LocalFinanceService {
       'is_custom': category.isCustom ? 1 : 0,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
+
+  Future<void> clearAllData(String userId) async {
+    final db = await _db;
+    await db.transaction((txn) async {
+      await txn.delete('transactions', where: 'user_id = ?', whereArgs: [userId]);
+      await txn.delete('budgets', where: 'user_id = ?', whereArgs: [userId]);
+      await txn.delete('categories', where: 'user_id = ?', whereArgs: [userId]);
+    });
+  }
 }
