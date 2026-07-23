@@ -78,6 +78,21 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     } catch (_) {
       // Keep the local snapshot available when Firebase cannot be reached.
     }
+
+    try {
+      final remoteBudgets = await TransactionService.instance
+          .getBudgetsForUser(userId!);
+      for (final entry in remoteBudgets.entries) {
+        await LocalFinanceService.instance.saveBudget(
+          userId!,
+          entry.key,
+          entry.value,
+        );
+      }
+      state = state.copyWith(budgetLimits: remoteBudgets);
+    } catch (_) {
+      // Keep the local snapshot available when Firebase cannot be reached.
+    }
   }
 
   Future<void> addTransaction(Transaction transaction) async {
@@ -111,6 +126,11 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   Future<void> setBudget(String category, double limit) async {
     if (userId == null) return;
     await LocalFinanceService.instance.saveBudget(userId!, category, limit);
+    try {
+      await TransactionService.instance.saveBudget(userId!, category, limit);
+    } catch (_) {
+      // Offline — local copy above still keeps this budget for now.
+    }
     state = state.copyWith(
       budgetLimits: {...state.budgetLimits, category: limit},
     );
@@ -119,6 +139,11 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   Future<void> removeBudget(String category) async {
     if (userId == null) return;
     await LocalFinanceService.instance.deleteBudget(userId!, category);
+    try {
+      await TransactionService.instance.deleteBudget(userId!, category);
+    } catch (_) {
+      // Offline — local delete above still applies.
+    }
     final updatedLimits = Map<String, double>.from(state.budgetLimits)
       ..remove(category);
     state = state.copyWith(budgetLimits: updatedLimits);
@@ -155,6 +180,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(isLoading: true);
     try {
       await TransactionService.instance.clearAllTransactions(userId!);
+      await TransactionService.instance.clearAllBudgets(userId!);
     } catch (_) {
       // If offline, still clear local data so the UI reflects the reset.
     }

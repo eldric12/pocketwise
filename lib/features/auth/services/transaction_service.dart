@@ -12,6 +12,14 @@ class TransactionService {
     return _firestore.collection('users').doc(userId).collection('transactions');
   }
 
+  DocumentReference<Map<String, dynamic>> _userBudgetsDoc(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('meta')
+        .doc('budgets');
+  }
+
   Future<List<Transaction>> getTransactionsForUser(String userId) async {
     final snapshot = await _userTransactions(userId)
         .orderBy('date', descending: true)
@@ -38,5 +46,26 @@ class TransactionService {
       batch.delete(doc.reference);
     }
     await batch.commit();
+  }
+
+  Future<Map<String, double>> getBudgetsForUser(String userId) async {
+    final snapshot = await _userBudgetsDoc(userId).get();
+    final data = snapshot.data();
+    if (data == null) return {};
+    return data.map((key, value) => MapEntry(key, (value as num).toDouble()));
+  }
+
+  Future<void> saveBudget(String userId, String category, double amount) async {
+    await _userBudgetsDoc(
+      userId,
+    ).set({category: amount}, SetOptions(merge: true));
+  }
+
+  Future<void> deleteBudget(String userId, String category) async {
+    await _userBudgetsDoc(userId).update({category: FieldValue.delete()});
+  }
+
+  Future<void> clearAllBudgets(String userId) async {
+    await _userBudgetsDoc(userId).delete();
   }
 }
