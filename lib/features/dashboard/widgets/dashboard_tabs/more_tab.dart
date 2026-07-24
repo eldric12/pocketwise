@@ -1,6 +1,6 @@
 part of '../dashboard_tabs.dart';
 
-class MoreTab extends StatelessWidget {
+class MoreTab extends ConsumerWidget  {
   const MoreTab({
     super.key,
     // required this.transactions,
@@ -13,7 +13,22 @@ class MoreTab extends StatelessWidget {
   final VoidCallback onToggleTheme;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    
+  Future<void> onLogout() async {
+    await AuthService.instance.logout();
+    ref.read(currentUserIdProvider.notifier).state = null;
+
+    if (!context.mounted) return;
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => LoginScreen(onToggleTheme: onToggleTheme),
+      ),
+      (route) => false,
+    );
+  }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 120),
       child: Column(
@@ -65,6 +80,49 @@ class MoreTab extends StatelessWidget {
                   },
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 40),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: ((context) {
+                    return AlertDialog(
+                      title: const Text('Confirm Logout'),
+                      content: const Text('Are you sure you want to logout?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            await onLogout();
+                          },
+                          child: const Text('Logout'),
+                        ),
+                      ],
+                    );
+                  }),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.themeColors.dangerBackground,
+              ),
+              child: Text(
+                'Logout',
+                style: GoogleFonts.inter(
+                  color: context.themeColors.dangerText,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
             ),
           ),
         ],
