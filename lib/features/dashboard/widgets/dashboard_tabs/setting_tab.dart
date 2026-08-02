@@ -9,8 +9,6 @@ class SettingTab extends ConsumerStatefulWidget {
 }
 
 class _SettingTabState extends ConsumerState<SettingTab> {
-  bool _offlineStorage = true;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,17 +177,6 @@ class _SettingTabState extends ConsumerState<SettingTab> {
                         label: 'Developer',
                         onTap: () {},
                         trailingText: 'Group 15',
-                      ),
-                      MoreRow(
-                        icon: Icons.storage_outlined,
-                        label: 'Offline Storage',
-                        onTap: () {},
-                        switchValue: _offlineStorage,
-                        onSwitchChanged: (value) {
-                          setState(() {
-                            _offlineStorage = value;
-                          });
-                        },
                       ),
                     ],
                   ),
