@@ -270,7 +270,7 @@ QuickStatistics getWeeklyStatistics(
     return diff >= 0 && diff < 7;
   }).toList();
 
-  return _calculateStatistics(filtered);
+  return _calculateStatistics(filtered, dayCount: 7);
 }
 
 QuickStatistics getMonthlyStatistics(
@@ -281,7 +281,9 @@ QuickStatistics getMonthlyStatistics(
       .where((tx) => tx.date.year == now.year && tx.date.month == now.month)
       .toList();
 
-  return _calculateStatistics(filtered);
+  final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+
+  return _calculateStatistics(filtered, dayCount: daysInMonth);
 }
 
 QuickStatistics getYearlyStatistics(
@@ -292,10 +294,17 @@ QuickStatistics getYearlyStatistics(
       .where((tx) => tx.date.year == now.year)
       .toList();
 
-  return _calculateStatistics(filtered);
+  final isLeapYear =
+      (now.year % 4 == 0 && now.year % 100 != 0) || now.year % 400 == 0;
+  final daysInYear = isLeapYear ? 366 : 365;
+
+  return _calculateStatistics(filtered, dayCount: daysInYear);
 }
 
-QuickStatistics _calculateStatistics(List<Transaction> transactions) {
+QuickStatistics _calculateStatistics(
+  List<Transaction> transactions, {
+  required int dayCount,
+}) {
   Transaction? highestExpense;
   Transaction? highestIncome;
 
@@ -335,6 +344,6 @@ QuickStatistics _calculateStatistics(List<Transaction> transactions) {
     highestExpense: highestExpense,
     highestIncome: highestIncome,
     mostUsedCategory: mostUsedCategory,
-    averageDailySpending: totalExpense / 30,
+    averageDailySpending: totalExpense / dayCount,
   );
 }
