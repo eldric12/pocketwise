@@ -21,7 +21,7 @@ void main() async {
   runApp(
     ProviderScope(
       child: DevicePreview(
-        enabled: true,
+        enabled: !kReleaseMode,
         builder: (context) => const PocketWiseApp(),
       ),
     ),
