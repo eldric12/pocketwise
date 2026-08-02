@@ -22,6 +22,7 @@ class _ReportAnalytics extends State<ReportAnalytics> {
   }
 
   List<ChartLegendItem> get _trendItems {
+    final now = DateTime.now();
     switch (_filter) {
       case TrendFilter.weekly:
         return getWeeklyChartItems(widget.transactions, now);
@@ -33,6 +34,7 @@ class _ReportAnalytics extends State<ReportAnalytics> {
   }
 
   List<ChartLegendItem> get _categoryItems {
+    final now = DateTime.now();
     switch (_filter) {
       case TrendFilter.weekly:
         return getWeeklyCategoryItems(
@@ -61,6 +63,7 @@ class _ReportAnalytics extends State<ReportAnalytics> {
   }
 
   IncomeExpenseItem get _incomeExpense {
+    final now = DateTime.now();
     switch (_filter) {
       case TrendFilter.weekly:
         return getWeeklyIncomeExpense(widget.transactions, now);
@@ -74,6 +77,7 @@ class _ReportAnalytics extends State<ReportAnalytics> {
   }
 
   QuickStatistics get _statistics {
+    final now = DateTime.now();
     switch (_filter) {
       case TrendFilter.weekly:
         return getWeeklyStatistics(widget.transactions, now);

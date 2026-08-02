@@ -3,8 +3,6 @@ part of '../dashboard_tabs.dart';
 // Line Chart
 enum TrendFilter { weekly, monthly, yearly }
 
-final now = DateTime.now();
-
 List<ChartLegendItem> getWeeklyChartItems(
   List<Transaction> transactions,
   DateTime now,
