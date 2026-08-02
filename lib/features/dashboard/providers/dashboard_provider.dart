@@ -106,7 +106,9 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     } catch (_) {
       // Offline — local copy above still saved; will reconcile with Firestore later.
     }
-    state = state.copyWith(transactions: [transaction, ...state.transactions]);
+    final updatedTransactions = [transaction, ...state.transactions]
+      ..sort((a, b) => b.date.compareTo(a.date));
+    state = state.copyWith(transactions: updatedTransactions);
   }
 
   Future<void> updateTransaction(Transaction transaction) async {
