@@ -2,8 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'login_screen.dart';
+import '../../dashboard/screens/dashboard_screen.dart';
+import '../providers/auth_provider.dart';
 
 class _SplashPatternPainter extends CustomPainter {
   @override
@@ -61,27 +65,40 @@ class _SplashPatternPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key, required this.onToggleTheme});
 
   final VoidCallback onToggleTheme;
 
   @override
-  State<SplashScreen> createState() => _WelcomeScreenState();
+  ConsumerState<SplashScreen> createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<SplashScreen> {
+class _WelcomeScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
     Timer(const Duration(seconds: 6), () {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) =>
-              LoginScreen(onToggleTheme: widget.onToggleTheme),
-        ),
-      );
+
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser != null) {
+        ref.read(currentUserIdProvider.notifier).state = currentUser.uid;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) =>
+                DashboardScreen(onToggleTheme: widget.onToggleTheme),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) =>
+                LoginScreen(onToggleTheme: widget.onToggleTheme),
+          ),
+        );
+      }
     });
   }
 
