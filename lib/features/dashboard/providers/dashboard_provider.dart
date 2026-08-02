@@ -171,13 +171,13 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
   Future<void> addCategory(CategoryDefinition category) async {
     if (userId == null) return;
-    await LocalFinanceService.instance.saveCategory(userId!, category);
     final alreadyExists = state.categories.any(
       (item) =>
           item.isExpense == category.isExpense &&
           item.label.toLowerCase() == category.label.toLowerCase(),
     );
     if (alreadyExists) return;
+    await LocalFinanceService.instance.saveCategory(userId!, category);
     state = state.copyWith(categories: [...state.categories, category]);
   }
 
