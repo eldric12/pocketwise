@@ -97,15 +97,29 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
   Future<void> addTransaction(Transaction transaction) async {
     if (userId == null) return;
-    await TransactionService.instance.insertTransaction(userId!, transaction);
     await LocalFinanceService.instance.saveTransaction(userId!, transaction);
+    try {
+      await TransactionService.instance.insertTransaction(
+        userId!,
+        transaction,
+      );
+    } catch (_) {
+      // Offline — local copy above still saved; will reconcile with Firestore later.
+    }
     state = state.copyWith(transactions: [transaction, ...state.transactions]);
   }
 
   Future<void> updateTransaction(Transaction transaction) async {
     if (userId == null) return;
-    await TransactionService.instance.updateTransaction(userId!, transaction);
     await LocalFinanceService.instance.saveTransaction(userId!, transaction);
+    try {
+      await TransactionService.instance.updateTransaction(
+        userId!,
+        transaction,
+      );
+    } catch (_) {
+      // Offline — local update above still applies.
+    }
     final updatedTransactions =
         state.transactions
             .map((item) => item.id == transaction.id ? transaction : item)
@@ -116,8 +130,12 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
   Future<void> deleteTransaction(String id) async {
     if (userId == null) return;
-    await TransactionService.instance.deleteTransaction(userId!, id);
     await LocalFinanceService.instance.deleteTransaction(userId!, id);
+    try {
+      await TransactionService.instance.deleteTransaction(userId!, id);
+    } catch (_) {
+      // Offline — local delete above still applies.
+    }
     state = state.copyWith(
       transactions: state.transactions.where((t) => t.id != id).toList(),
     );
